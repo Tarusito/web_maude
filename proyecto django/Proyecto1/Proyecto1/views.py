@@ -10,22 +10,33 @@ def home(request):
     return render(request, 'home.html')
 
 def run_maude_command(request):
-    user_input = request.POST.get('maude_command')
+    if request.method == "POST":
+        command_type = request.POST.get('maude_operation')
+        maude_execution = request.POST.get('maude_execution')
+        user_code = request.POST.get('maude_code')
 
-    maude.init()
+        maude.init()
+        maude.input(user_code)
+        module = maude.getCurrentModule()
 
-    # Cargar el módulo, aquí podrías cargar un módulo que entienda tu operación
-    module = maude.getModule('NAT')
+        term = module.parseTerm(maude_execution)
 
-    # Parsear el término ingresado por el usuario
-    term = module.parseTerm(user_input)
+        # Ejecutar la operación elegida por el usuario
+        if command_type == "reduce":
+            term.reduce()
+        elif command_type == "rewrite":
+            term.rewrite()
+        elif command_type == "search":
+            # Para search, necesitarás ajustar esto según cómo quieras usarlo
+            pass
+        elif command_type == "frewrite":
+            term.frewrite()
+        elif command_type == "xrewrite":
+            term.xrewrite()
 
-    # Reducir el término
-    term.reduce()
+        # Convertir el resultado a string para visualización
+        result_str = str(term)
 
-    # Convertir el resultado a string para la visualización
-    result_str = str(term)
-
-    return render(request, 'home.html', {'result': result_str})
-
-    
+        return render(request, 'home.html', {'result': result_str})
+    else:
+        return render(request, 'home.html')
