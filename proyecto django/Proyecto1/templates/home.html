@@ -48,6 +48,9 @@
         <h2>Ejecuta tu Código Maude</h2>
         <form action="{% url 'run_maude_command' %}" method="post">
             {% csrf_token %}
+            <label for="fileUpload">Cargar archivo .maude:</label>
+            <input type="file" id="fileUpload" accept=".maude">
+            <button type="button" onclick="loadFile()">Cargar</button>
             <div class="form-group">
                 <label for="maudeCode">Módulo Maude:</label>
                 <textarea class="form-control" id="maudeCode" name="maude_code" rows="5"></textarea>
@@ -75,4 +78,20 @@
     
     </div>
 </body>
+
+<script>
+  function loadFile() {
+      var input = document.getElementById("fileUpload");
+      var textarea = document.getElementById("maudeCode"); // Asegúrate de que este ID coincida con tu textarea
+      if (input.files && input.files[0]) {
+          var reader = new FileReader();
+          reader.onload = function(e) {
+              textarea.value = e.target.result;
+          }
+          reader.readAsText(input.files[0]);
+      } else {
+          alert("Por favor, selecciona un archivo primero.");
+      }
+  }
+  </script>
 </html>
