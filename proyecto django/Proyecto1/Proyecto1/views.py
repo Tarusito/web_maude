@@ -30,7 +30,7 @@ def run_maude_command(request):
         elif command_type == "rewrite":
             term.rewrite()
         elif command_type == "search":
-            term.serch()
+            term.search()
         # Añadir más condiciones según sea necesario
 
         result_str = str(term)
