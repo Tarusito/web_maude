@@ -22,58 +22,59 @@
               <li class="nav-item">
                 <a class="nav-link" href="#">Ejecutar código</a>
               </li>
-              <li class="nav-item dropdown">
-                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                  Dropdown
-                </a>
-                <ul class="dropdown-menu">
-                  <li><a class="dropdown-item" href="#">Action</a></li>
-                  <li><a class="dropdown-item" href="#">Another action</a></li>
-                  <li><hr class="dropdown-divider"></li>
-                  <li><a class="dropdown-item" href="#">Something else here</a></li>
-                </ul>
-              </li>
-              <li class="nav-item">
-                <a class="nav-link disabled" aria-disabled="true">Disabled</a>
-              </li>
             </ul>
-            <form class="d-flex" role="search">
-              <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
-              <button class="btn btn-outline-success" type="submit">Search</button>
-            </form>
           </div>
         </div>
       </nav>
-      <div class="container mt-5 p-5">
-        <h2>Ejecuta tu Código Maude</h2>
-        <form id = "maudeForm" action="" method="post">
-            {% csrf_token %}
-            <label for="fileUpload">Cargar archivo .maude:</label>
-            <input type="file" id="fileUpload" accept=".maude">
-            <button type="button" onclick="loadFile()">Cargar</button>
-            <div class="form-group">
-                <label for="maudeCode">Módulo Maude:</label>
-                <textarea class="form-control" id="maudeCode" name="maude_code" rows="5"></textarea>
-                <label for="maudeCode">Código a ejecutar:</label>
-                <textarea class="form-control" id="maudeCode" name="maude_execution" rows="5"></textarea>
+      <div class="container mt-4 p-5">
+        <div class="row">
+          <div class="col-auto">
+            <h2>Ejecuta tu Código Maude</h2>
+            <form id = "maudeForm" action="" method="post">
+                {% csrf_token %}
+                <label for="fileUpload">Cargar archivo .maude:</label>
+                <input type="file" id="fileUpload" accept=".maude">
+                <button type="button" onclick="loadFile()">Cargar</button>
+                <div class="form-group">
+                    <label for="maudeCode">Módulo Maude:</label>
+                    <textarea class="form-control" id="maudeCode" name="maude_code" rows="5"></textarea>
+                    <label for="maudeCode">Código a ejecutar:</label>
+                    <textarea class="form-control" id="maudeCode" name="maude_execution" rows="5"></textarea>
+                </div>
+                <label for="maudeOperation">Selecciona la Operación:</label>
+                <select class="form-control mb-3" id="maudeOperation" name="maude_operation">
+                  <option value="reduce">Reduce</option>
+                  <option value="rewrite">Rewrite</option>
+                  <option value="search">Search</option>
+                  <option value="frewrite">Fuzzy Rewrite</option>
+                  <option value="xrewrite">Cross Rewrite</option>
+                </select>
+                <button type="submit" class="btn btn-primary mt-3">Ejecutar</button>
+            </form>
+            <br>
+            <div class="result">
+                {% if result %}
+                    <h3>Resultado:</h3>
+                    <p>{{ result }}</p>
+                {% endif %}
             </div>
-            <label for="maudeOperation">Selecciona la Operación:</label>
-            <select class="form-control mb-3" id="maudeOperation" name="maude_operation">
-              <option value="reduce">Reduce</option>
-              <option value="rewrite">Rewrite</option>
-              <option value="search">Search</option>
-              <option value="frewrite">Fuzzy Rewrite</option>
-              <option value="xrewrite">Cross Rewrite</option>
-            </select>
-            <button type="submit" class="btn btn-primary mt-3">Ejecutar</button>
-        </form>
-        <br>
-        <div class="result">
-            {% if result %}
-                <h3>Resultado:</h3>
-                <p>{{ result }}</p>
-            {% endif %}
+          </div>
+          <div class="col-auto">
+            <div class="examples-section">
+              <h3>Ejemplos</h3>
+              <div class="row mt-1">
+                <button onclick="loadExample('numerosNaturales')">Números Naturales</button>
+              </div>
+              <div class="row mt-1">
+                <button onclick="loadExample('pilas')">Pilas</button>
+              </div>
+              <div class="row mt-1">
+                <button onclick="loadExample('listas')">Listas</button>
+              </div>
+          </div>
+          </div>
         </div>
+        
     </div>
     
     </div>
@@ -119,5 +120,129 @@
         .catch(error => console.error('Error:', error));
     });
 });
+  function loadExample(exampleName) {
+      var codeTextArea = document.getElementById("maudeCode");
+      switch (exampleName) {
+          case 'numerosNaturales':
+              codeTextArea.value = `fmod PEANO is
+                sort PeanoNat .
+                op 0 : -> PeanoNat [ctor] .
+                op s : PeanoNat -> PeanoNat [ctor] .
+                vars N M : PeanoNat .
+                op _+_ : PeanoNat PeanoNat -> PeanoNat [assoc comm] .
+                *** Caso 1: constructor 0
+                eq [s1] : 0 + N = N .
+                *** Caso 2: constructor sucesor
+                eq [s2] : s(N) + M = s(N + M) .
+                op _*_ : PeanoNat PeanoNat -> PeanoNat [assoc comm] .
+                eq 0 * N = 0 .
+                eq s(N) * M = M + (N * M) .
+                op esPositivo : PeanoNat -> Bool .
+                eq esPositivo(0) = false .
+                eq esPositivo(s(N)) = true .
+                endfm`;
+              break;
+          case 'pilas':
+              codeTextArea.value = `fmod PILA is
+                pr NAT .
+                sort Pila .
+
+                op pila-vacia : -> Pila [ctor] .
+                op apila : Nat Pila -> Pila [ctor] .
+
+                var N : Nat .
+                var P : Pila .
+
+                op desapila : Pila -> Pila .
+                eq desapila(pila-vacia) = pila-vacia .
+                eq desapila(apila(N, P)) = P .
+
+                op cima : Pila ~> Nat .
+                eq cima(apila(N, P)) = N .
+                endfm`;
+              break;
+          case 'listas':
+              codeTextArea.value =`fmod PERSONA is
+                pr STRING .
+                sort Persona .
+                op <_,_> : String Nat -> Persona [ctor] .
+                vars S S’ : String .
+                vars N N’ : Nat .
+
+                ops max min : Persona Persona -> Persona [comm] .
+                ceq [max] : max(< S, N >, < S’, N’ >) = < S, N >
+                if N >= N’ .
+                ceq [min] : min(< S, N >, < S’, N’ >) = < S, N >
+                if N <= N’ .
+
+                ops max min : Persona Persona -> Persona [comm] .
+                eq [max] : max(< S, N >, < S’, N’ >) = if N >= N’
+                then < S, N >
+                else < S’, N’ >
+                fi .
+                eq [min] : min(< S, N >, < S’, N’ >) = N <= N’
+                then < S, N >
+                else < S’, N’ >
+                fi .
+
+                ops _<=_ _>_ : Persona Persona -> Bool .
+                eq < S, N > <= < S’, N’ > = N <= N’ .
+                eq < S, N > > < S’, N’ > = N > N’ .
+
+                ops a b c d : -> Persona .
+                eq a = < "a", 100 > .
+                eq b = < "b", 80 > .
+                eq c = < "c", 150 > .
+                eq d = < "d", 10 > .
+                endfm
+
+                fmod LISTA is
+                pr PERSONA .
+                sorts Lista ListaOrd .
+
+                subsort Persona < ListaOrd < Lista .
+
+                op lv : -> ListaOrd [ctor] .
+                op __ : Lista Lista -> Lista [ctor assoc id: lv] .
+                vars P P’ : Persona .
+                vars L L’ : Lista .
+                var LO : ListaOrd .
+
+                cmb P P’ L : ListaOrd
+                if P <= P’ /\
+                P’ L : ListaOrd .
+
+                op head : Lista ~> Persona .
+                eq head(P L) = P .
+
+                op tail : Lista ~> Lista .
+                eq tail(P L) = L .
+
+                op tam : Lista -> Nat .
+                eq tam(lv) = 0 .
+                eq tam(P L) = s(tam(L)) .
+
+                op esta? : Lista Persona -> Bool .
+                eq esta?(L P L’, P) = true .
+                eq esta?(L, P) = false [owise] .
+
+                op ordena : Lista -> Lista .
+                ceq ordena(L P P’ L’) = ordena(L P’ P L’)
+                if P > P’ .
+                eq ordena(L) = L [owise] .
+
+                op inserta-ord : ListaOrd Persona -> ListaOrd .
+                eq inserta-ord(lv, P) = P .
+                eq inserta-ord(P L, P’) = if P <= P’
+                then P inserta-ord(L, P’)
+                else P’ P L
+                fi .
+
+                op ordena-por-insercion : ListaOrd -> ListaOrd .
+                eq ordena-por-insercion(lv) = lv .
+                ceq ordena-por-insercion(P L) = inserta-ord(L’, P)
+                if L’ := ordena-por-insercion(L) .
+                endfm`
+              break;}}
   </script>
 </html>
