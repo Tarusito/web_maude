@@ -36,19 +36,19 @@
                 <input type="file" id="fileUpload" accept=".maude">
                 <button type="button" onclick="loadFile()">Cargar</button>
                 <div class="form-group">
-                    <label for="maudeCode">Módulo Maude:</label>
-                    <textarea class="form-control" id="maudeCode" name="maude_code" rows="5"></textarea>
+                  <label for="maudeCode">Módulo Maude:</label>
+                  <textarea class="form-control" id="maudeCode" name="maude_code" rows="5"></textarea>
+                  <label for="maudeOperation">Selecciona la Operación:</label>
+                  <select class="form-control mb-3" id="maudeOperation" name="maude_operation">
+                    <option value="reduce">Reduce</option>
+                    <option value="rewrite">Rewrite</option>
+                    <option value="search">Search</option>
+                    <option value="frewrite">Fuzzy Rewrite</option>
+                    <option value="xrewrite">Cross Rewrite</option>
+                  </select>
                     <label for="maudeCode">Código a ejecutar:</label>
                     <textarea class="form-control" id="maudeCode" name="maude_execution" rows="5"></textarea>
                 </div>
-                <label for="maudeOperation">Selecciona la Operación:</label>
-                <select class="form-control mb-3" id="maudeOperation" name="maude_operation">
-                  <option value="reduce">Reduce</option>
-                  <option value="rewrite">Rewrite</option>
-                  <option value="search">Search</option>
-                  <option value="frewrite">Fuzzy Rewrite</option>
-                  <option value="xrewrite">Cross Rewrite</option>
-                </select>
                 <button type="submit" class="btn btn-primary mt-3">Ejecutar</button>
             </form>
             <br>
