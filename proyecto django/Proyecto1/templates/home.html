@@ -38,14 +38,6 @@
                 <div class="form-group">
                   <label for="maudeCode">Módulo Maude:</label>
                   <textarea class="form-control" id="maudeCode" name="maude_code" rows="5"></textarea>
-                  <label for="maudeOperation">Selecciona la Operación:</label>
-                  <select class="form-control mb-3" id="maudeOperation" name="maude_operation">
-                    <option value="reduce">Reduce</option>
-                    <option value="rewrite">Rewrite</option>
-                    <option value="search">Search</option>
-                    <option value="frewrite">Fuzzy Rewrite</option>
-                    <option value="xrewrite">Cross Rewrite</option>
-                  </select>
                     <label for="maudeCode">Código a ejecutar:</label>
                     <textarea class="form-control" id="maudeCode" name="maude_execution" rows="5"></textarea>
                 </div>
@@ -70,6 +62,9 @@
               </div>
               <div class="row mt-1">
                 <button onclick="loadExample('listas')">Listas</button>
+              </div>
+              <div class="row mt-1">
+                <button onclick="loadExample('die-hard')">Die-hard</button>
               </div>
           </div>
           </div>
@@ -243,6 +238,28 @@
                 ceq ordena-por-insercion(P L) = inserta-ord(L’, P)
                 if L’ := ordena-por-insercion(L) .
                 endfm`
+              break;
+              case 'die-hard':
+              codeTextArea.value = `mod DIE-HARD is
+                    protecting NAT .
+                    sorts Vasija ConjVasija .
+                    subsort Vasija < ConjVasija .
+                    op vasija : Nat Nat -> Vasija [ctor] . 
+                    op __ : ConjVasija ConjVasija -> ConjVasija [ctor assoc comm] .
+                    vars M1 N1 M2 N2 : Nat .
+                    op initial : -> ConjVasija .
+                    eq initial = vasija(3, 0) vasija(5, 0) vasija(8,0) .
+                    rl [vacia] : vasija(M1, N1) => vasija(M1, 0) .
+                    rl [llena] : vasija(M1, N1) => vasija(M1, M1) .
+
+                    crl [transfer1] : vasija(M1, N1) vasija(M2, N2)
+                    => vasija(M1, 0) vasija(M2, N1 + N2)
+                    if N1 + N2 <= M2 .
+
+                    crl [transfer2] : vasija(M1, N1) vasija(M2, N2)
+                    => vasija(M1, sd(N1 + N2, M2)) vasija(M2, M2)
+                    if N1 + N2 > M2 .
+                    endm`;
               break;}}
   </script>
 </html>
