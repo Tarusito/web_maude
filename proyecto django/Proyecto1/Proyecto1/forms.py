@@ -1,7 +1,10 @@
 # forms.py
+from django.contrib.auth.forms import AuthenticationForm
 from django import forms
 from django.core.exceptions import ValidationError
 import re
+
+
 
 class RegistrationForm(forms.Form):
     nombre = forms.CharField(label='Nombre', max_length=100)
@@ -29,3 +32,12 @@ class RegistrationForm(forms.Form):
             self.add_error('confirmar_contraseña', 'Las contraseñas no coinciden.')
 
         return cleaned_data
+    
+class UserLoginForm(AuthenticationForm):
+    username = forms.EmailField(widget=forms.EmailInput(attrs={'class': 'validate', 'placeholder': 'Correo UCM', 'autofocus': True}))
+    password = forms.CharField(widget=forms.PasswordInput(attrs={'placeholder': 'Contraseña'}))
+
+    def __init__(self, *args, **kwargs):
+        super(UserLoginForm, self).__init__(*args, **kwargs)
+        # Cambia el label del campo 'username' a 'Correo electrónico'
+        self.fields['username'].label = "Correo electrónico"

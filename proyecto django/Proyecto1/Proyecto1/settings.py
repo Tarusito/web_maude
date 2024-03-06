@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'Proyecto1',
+    'widget_tweaks',
 ]
 
 MIDDLEWARE = [
@@ -130,3 +131,6 @@ EMAIL_HOST_USER = 'chatmaude@gmail.com'  # Sustituye por tu dirección de correo
 EMAIL_HOST_PASSWORD = 'qmgt lwrq xcpx rptu'    # Sustituye por tu contraseña
 
 AUTH_USER_MODEL = 'Proyecto1.Usuario'
+
+LOGIN_URL = '/login/'
+LOGOUT_REDIRECT_URL = '/login/'
