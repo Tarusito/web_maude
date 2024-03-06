@@ -17,6 +17,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 from Proyecto1 import views  # Importa la vista 'home' desde 'Proyecto1.views'
+from django.contrib.auth import views as auth_views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -25,5 +26,6 @@ urlpatterns = [
     path('login/', views.login, name='login'),
     path('verificar/<str:codigo>/', views.verificar_email, name='verificar'),
     path('run_maude_command/', views.run_maude_command, name='run_maude_command'),
+    path('logout/', views.logout_request, name='logout'),
 ]
 

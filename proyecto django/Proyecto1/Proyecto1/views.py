@@ -1,4 +1,6 @@
+from imaplib import _Authenticator
 import re
+from telnetlib import LOGOUT
 from django.core.mail import send_mail
 from django.conf import settings
 from django.http import HttpResponse
@@ -6,18 +8,27 @@ from django.http import JsonResponse
 from django.shortcuts import redirect, render
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
-from .forms import RegistrationForm
+from .forms import RegistrationForm, UserLoginForm
+from django.contrib.auth import login as auth_login
 from django.template import loader
 from .forms import RegistrationForm
+from django.contrib.auth import authenticate, logout
+from django.contrib.auth.decorators import login_required
 from .models import Usuario
 import maude
 import itertools
 
 #Cada funcion que hay aquí es una vista
 
+@login_required
 def home(request):
     # Lógica de tu vista aquí
     return render(request, 'home.html')
+
+def logout_request(request):
+    logout(request)
+    # Puedes añadir aquí cualquier lógica adicional que necesites.
+    return redirect('login')
 
 def verificar_email(request, codigo):
     user = Usuario.objects.get(codigo_verificacion=codigo)
@@ -33,8 +44,23 @@ def enviar_email_verificacion(user):
     send_mail(subject, message, email_from, recipient_list)
 
 def login(request):
-    # Lógica de tu vista aquí
-    return render(request, 'login.html')
+    if request.method == 'POST':
+        form = UserLoginForm(data=request.POST)
+        if form.is_valid():
+            email = form.cleaned_data.get('username')
+            password = form.cleaned_data.get('password')
+            user = authenticate(request, username=email, password=password)  # Cambia aquí a 'username'
+            if user is not None:
+                if user.email_verificado:
+                    auth_login(request, user)  # Usa el nuevo nombre aquí
+                    return redirect('home')
+                else:
+                    form.add_error(None, 'Por favor, verifica tu correo electrónico antes de iniciar sesión.')
+            else:
+                form.add_error(None, 'Correo o contraseña incorrectos.')
+    else:
+        form = UserLoginForm()
+    return render(request, 'login.html', {'form': form})
 
 def register(request):
     if request.method == 'POST':
