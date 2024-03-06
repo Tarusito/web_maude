@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+
+</head>
+<body>
+
+    {% block content %}
+    <div class="container mt-5">
+        <div class="row">
+            <div class="col-md-6 offset-md-3">
+                <h2 class="text-center">Registro</h2>
+                <form method="post" class="mt-4">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label for="id_nombre">Nombre</label>
+                        <input type="text" class="form-control" id="id_nombre" name="nombre" placeholder="Tu nombre">
+                    </div>
+                    <div class="form-group mt-2">
+                        <label for="id_correo_ucm">Correo UCM</label>
+                        <input type="email" class="form-control" id="id_correo_ucm" name="correo_ucm" placeholder="nombre@ucm.es">
+                    </div>
+                    <div class="form-group mt-2">
+                        <label for="id_contraseña">Contraseña</label>
+                        <input type="password" class="form-control" id="id_contraseña" name="contraseña" placeholder="Contraseña">
+                    </div>
+                    <div class="form-group mt-2">
+                        <label for="id_confirmar_contraseña">Confirmar contraseña</label>
+                        <input type="password" class="form-control" id="id_confirmar_contraseña" name="confirmar_contraseña" placeholder="Confirmar contraseña">
+                    </div>
+                    <button type="submit" class="btn btn-primary mt-3">Registrar</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    <script>
+        $(document).ready(function() {
+            // Validación del correo UCM
+            $("#id_correo_ucm").on("input", function() {
+                var email = $(this).val();
+                if (email.length > 0 && !email.endsWith("@ucm.es")) {
+                    $(this).addClass("is-invalid");
+                } else {
+                    $(this).removeClass("is-invalid");
+                }
+            });
+        
+            // Validación de la contraseña
+            $("#id_contraseña, #id_confirmar_contraseña").on("input", function() {
+                var password = $("#id_contraseña").val();
+                var confirmPassword = $("#id_confirmar_contraseña").val();
+                var validPassword = password.length >= 8 && /[A-Z]/.test(password) && /[a-z]/.test(password) && /\d/.test(password);
+                if (!validPassword) {
+                    $("#id_contraseña").addClass("is-invalid");
+                } else {
+                    $("#id_contraseña").removeClass("is-invalid");
+                }
+                if (password !== confirmPassword) {
+                    $("#id_confirmar_contraseña").addClass("is-invalid");
+                } else {
+                    $("#id_confirmar_contraseña").removeClass("is-invalid");
+                }
+            });
+        });
+        </script>
+    {% endblock %}
+
+</body>
+</html>

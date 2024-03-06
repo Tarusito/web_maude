@@ -1,10 +1,15 @@
 import re
+from django.core.mail import send_mail
+from django.conf import settings
 from django.http import HttpResponse
 from django.http import JsonResponse
-from django.shortcuts import render
+from django.shortcuts import redirect, render
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
+from .forms import RegistrationForm
 from django.template import loader
+from .forms import RegistrationForm
+from .models import Usuario
 import maude
 import itertools
 
@@ -13,6 +18,40 @@ import itertools
 def home(request):
     # Lógica de tu vista aquí
     return render(request, 'home.html')
+
+def verificar_email(request, codigo):
+    user = Usuario.objects.get(codigo_verificacion=codigo)
+    user.email_verificado = True
+    user.save()
+    return redirect('login')
+
+def enviar_email_verificacion(user):
+    subject = 'Verifica tu correo electrónico'
+    message = f'Usa este enlace para verificar tu cuenta: http://127.0.0.1:8000/verificar/{user.codigo_verificacion}'
+    email_from = settings.EMAIL_HOST_USER
+    recipient_list = [user.email,]
+    send_mail(subject, message, email_from, recipient_list)
+
+def login(request):
+    # Lógica de tu vista aquí
+    return render(request, 'login.html')
+
+def register(request):
+    if request.method == 'POST':
+        form = RegistrationForm(request.POST)
+        if form.is_valid():
+            user = Usuario(
+                email=form.cleaned_data['correo_ucm'],
+                nombre=form.cleaned_data['nombre'],
+            )
+            user.set_password(form.cleaned_data['contraseña'])
+            user.save()
+            enviar_email_verificacion(user)
+            return redirect('login')  # Redireccionar a la página que desees después del registro
+    else:
+        form = RegistrationForm()
+
+    return render(request, 'register.html', {'form': form})
 
 @require_http_methods(["POST"])
 def run_maude_command(request):
@@ -125,25 +164,7 @@ def run_maude_command(request):
                     solucion = str(subs)
                     soluciones += f"{solucion}<br>"  # Usando <br> para HTML, reemplazar por '\n' si es para texto
 
-            return soluciones if soluciones else "No hay soluciones"
-                    
-            
-
-        
-        def example():
-            soluciones = []
-            instruccion = ""
-            ini = module.parseTerm("initial")
-            fin = module.parseTerm("vasija(N:Nat, M:Nat) B:ConjVasija")
-            cond1 = module.parseTerm("4")
-            cond2 = module.parseTerm("M:Nat")
-            conditions = [maude.EqualityCondition(cond1, cond2)]
-            for sol, subs, path, nrew in itertools.islice(ini.search(maude.ANY_STEPS, fin, conditions), 1):
-                soluciones.append(subs)
-
-            return soluciones
-
-            
+            return soluciones if soluciones else "No hay soluciones"        
             
 
         if comando in ["reduce", "red"]:

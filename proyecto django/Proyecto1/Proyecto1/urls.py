@@ -20,7 +20,10 @@ from Proyecto1 import views  # Importa la vista 'home' desde 'Proyecto1.views'
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('home/', views.home, name='home'),  # Usa 'home' directamente como vista
+    path('home/', views.home, name='home'),  # Usa 'home' directamente como vistaç
+    path('register/', views.register, name='register'),
+    path('login/', views.login, name='login'),
+    path('verificar/<str:codigo>/', views.verificar_email, name='verificar'),
     path('run_maude_command/', views.run_maude_command, name='run_maude_command'),
 ]
 
