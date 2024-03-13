@@ -27,5 +27,10 @@ urlpatterns = [
     path('verificar/<str:codigo>/', views.verificar_email, name='verificar'),
     path('run_maude_command/', views.run_maude_command, name='run_maude_command'),
     path('logout/', views.logout_request, name='logout'),
+    path('new_chat/', views.new_chat, name='new_chat'),
+    path('chat/<int:chat_id>/', views.chat_view, name='chat'),
+    path('run_maude_command/<int:chat_id>/', views.run_maude_command, name='run_maude_command'),
+    path('get_chat_content/<int:chat_id>/', views.get_chat_content, name='get_chat_content'),
+
 ]
 

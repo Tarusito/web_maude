@@ -5,7 +5,7 @@ from django.core.mail import send_mail
 from django.conf import settings
 from django.http import HttpResponse
 from django.http import JsonResponse
-from django.shortcuts import redirect, render
+from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 from .forms import RegistrationForm, UserLoginForm
@@ -14,16 +14,66 @@ from django.template import loader
 from .forms import RegistrationForm
 from django.contrib.auth import authenticate, logout
 from django.contrib.auth.decorators import login_required
-from .models import Usuario
+from .models import Chat, Mensaje, Usuario
 import maude
 import itertools
 
 #Cada funcion que hay aquí es una vista
 
 @login_required
-def home(request):
-    # Lógica de tu vista aquí
-    return render(request, 'home.html')
+def home(request, chat_id=None):
+    chats = Chat.objects.filter(usuario=request.user).order_by('-id')
+    chat_actual = None
+    mensajes = []
+
+    if chat_id:
+        chat_actual = Chat.objects.filter(id=chat_id, usuario=request.user).first()
+        if chat_actual:
+            mensajes = Mensaje.objects.filter(chat=chat_actual).order_by('-fecha_creacion')
+    
+    context = {
+        'chats': chats,
+        'chat_actual': chat_actual,
+        'mensajes': mensajes,
+    }
+    return render(request, 'home.html', context)
+
+def chat_view(request, chat_id):
+    chat = Chat.objects.get(id=chat_id)
+    if request.method == 'POST':
+        comando = request.POST.get('maude_execution')
+        respuesta = interpret_command(comando)  # Procesa el comando con Maude
+        Mensaje.objects.create(chat=chat, comando=comando, respuesta=respuesta)  # Guarda el mensaje y la respuesta en la base de datos
+        return redirect('chat', chat_id=chat.id)  # Redirige al mismo chat después de enviar el comando
+
+    mensajes = Mensaje.objects.filter(chat=chat).order_by('-fecha_creacion')
+    return render(request, 'chat.html', {'chat': chat, 'mensajes': mensajes})
+
+@login_required
+def get_chat_content(request, chat_id):
+    # Asegúrate de que solo los usuarios autorizados puedan acceder a sus chats
+    chat = get_object_or_404(Chat, id=chat_id, usuario=request.user)
+    mensajes = Mensaje.objects.filter(chat=chat).order_by('-fecha_creacion')
+    mensajes_data = [{
+        'comando': mensaje.comando,
+        'respuesta': mensaje.respuesta,
+        # Agrega aquí más datos si necesitas
+    } for mensaje in mensajes]
+    chat_data = {
+        'nombre': chat.nombre,
+        'mensajes': mensajes_data,
+        # Agrega aquí más datos si necesitas
+    }
+    return JsonResponse(chat_data)
+
+@login_required
+def new_chat(request):
+    if request.method == "POST":
+        nombre = request.POST.get("nombre_chat")
+        nuevo_chat = Chat.objects.create(nombre=nombre, usuario=request.user)
+        return redirect('home')
+    return render(request, 'new_chat.html')
+
 
 def logout_request(request):
     logout(request)
@@ -80,9 +130,9 @@ def register(request):
     return render(request, 'register.html', {'form': form})
 
 @require_http_methods(["POST"])
-def run_maude_command(request):
+def run_maude_command(request, chat_id):
+    chat = Chat.objects.get(id=chat_id, usuario=request.user)
     if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-        command_type = request.POST.get('maude_operation')
         maude_execution = request.POST.get('maude_execution')
         user_code = request.POST.get('maude_code')
 
@@ -201,14 +251,13 @@ def run_maude_command(request):
             resultado = search()
         elif comando in ["frewrite", "frew"]:
             resultado = frewrite()
-        elif comando in ["example"]:
-            example()
         # Añadir más condiciones según sea necesario
 
-        result_str = str(resultado)
+        response = str(resultado)
+        Mensaje.objects.create(chat=chat, comando=maude_execution, respuesta=response)
 
         # Devolver la respuesta como JSON
-        return JsonResponse({'result': result_str})
+        return JsonResponse({'comando': maude_execution, 'respuesta': response})
     else:
         # Manejar solicitudes no AJAX si es necesario
-        return render(request, 'home.html')
+        return JsonResponse({'error': 'Solicitud incorrecta'}, status=400)

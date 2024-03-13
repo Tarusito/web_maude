@@ -1,268 +1,222 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Home</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Home</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL"
+    crossorigin="anonymous"></script>
+  <style>
+    .hidden {
+      display: none;
+    }
+  </style>
 </head>
+
 <body>
-    <nav class="navbar navbar-expand-md navbar-dark fixed-top bg-dark" data-bs-theme="dark">
-        <div class="container-fluid">
-          <a class="navbar-brand" href="/home">Maude Web</a>
-          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-          </button>
-          <div class="collapse navbar-collapse" id="navbarSupportedContent">
-            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-              <li class="nav-item">
-                <a class="nav-link active" aria-current="page" href="/home">Home</a>
-              </li>
-              <li class="nav-item">
-                <a class="nav-link" href="#">Ejecutar código</a>
-              </li>
-              <li class="nav-item">
-                <a class="nav-link" href="{% url 'logout' %}">Cerrar sesión</a>
-            </li>
-            </ul>
-          </div>
+  <nav class="navbar navbar-expand-md navbar-dark fixed-top bg-dark" data-bs-theme="dark">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="/home">Maude Web</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
+        aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+          <li class="nav-item">
+            <a class="nav-link active" aria-current="page" href="/home">Home</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#">Ejecutar código</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'logout' %}">Cerrar sesión</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container mt-5">
+    <div class="row">
+      <!-- Columna para los chats -->
+      <div class="col-md-4 mt-3">
+        <h4>Chats</h4>
+        <div class="list-group">
+          {% for chat in chats %}
+          <a href="#" class="list-group-item list-group-item-action chat-link" data-chat-id="{{ chat.id }}">
+            {{ chat.nombre }}
+          </a>
+          {% endfor %}
         </div>
-      </nav>
-      <div class="container mt-4 p-5">
-        <div class="row">
-          <div class="col-auto">
-            <h2>Ejecuta tu Código Maude</h2>
-            <form id = "maudeForm" action="" method="post">
+        <a href="{% url 'new_chat' %}" class="btn btn-primary mt-3">Crear nuevo chat</a>
+      </div>
+      <!-- Columna central, se mostrará solo si hay un chat seleccionado -->
+      <div class="col-md-8">
+        {% if chat_actual %}
+        <h4>{{ chat_actual.nombre }}</h4>
+        <div class="container mt-4">
+          <div class="chat-container">
+            <!-- Historial de chat -->
+            <div class="chat-history">
+              {% for mensaje in mensajes %}
+              <div class="mensaje">
+                <p class="usuario">Tú:</p>
+                <p>{{ mensaje.comando }}</p>
+              </div>
+              <div class="respuesta">
+                <p class="maude">Maude:</p>
+                <p>{{ mensaje.respuesta }}</p>
+              </div>
+              {% endfor %}
+            </div>
+
+
+            <!-- Sección del módulo Maude, inicialmente visible -->
+            <div id="maudeModuleSection" class="mb-3">
+              <h5>Módulo Maude:</h5>
+              <textarea class="form-control" id="maudeCode" name="maude_code"
+                rows="5">{{ chat_actual.maude_module }}</textarea>
+            </div>
+            <!-- Formulario para enviar nuevos comandos -->
+            <div class="chat-input">
+              <form id="maudeForm" action="" method="post">
                 {% csrf_token %}
-                <label for="fileUpload">Cargar archivo .maude:</label>
-                <input type="file" id="fileUpload" accept=".maude">
-                <button type="button" onclick="loadFile()">Cargar</button>
-                <div class="form-group">
-                  <label for="maudeCode">Módulo Maude:</label>
-                  <textarea class="form-control" id="maudeCode" name="maude_code" rows="5"></textarea>
-                    <label for="maudeCode">Código a ejecutar:</label>
-                    <textarea class="form-control" id="maudeCode" name="maude_execution" rows="5"></textarea>
+                <div class="input-group mb-3">
+                  <input type="text" id="maudeCommand" name="maude_execution" class="form-control"
+                    placeholder="Escribe tu comando Maude aquí...">
+                  <button class="btn btn-primary" type="submit">Enviar</button>
                 </div>
-                <button type="submit" class="btn btn-primary mt-3">Ejecutar</button>
-            </form>
-            <br>
-            <div class="result">
-                {% if result %}
-                    <h3>Resultado:</h3>
-                    <p>{{ result }}</p>
-                {% endif %}
+              </form>
             </div>
           </div>
-          <div class="col-auto">
-            <div class="examples-section">
-              <h3>Ejemplos</h3>
-              <div class="row mt-1">
-                <button onclick="loadExample('numerosNaturales')">Números Naturales</button>
-              </div>
-              <div class="row mt-1">
-                <button onclick="loadExample('pilas')">Pilas</button>
-              </div>
-              <div class="row mt-1">
-                <button onclick="loadExample('listas')">Listas</button>
-              </div>
-              <div class="row mt-1">
-                <button onclick="loadExample('die-hard')">Die-hard</button>
-              </div>
-          </div>
-          </div>
         </div>
-        
+
+        {% else %}
+        <div class="container mt-3">
+          <h4>Bienvenido a Maude Web</h4>
+          <p>Selecciona un chat o crea uno nuevo para comenzar.</p>
+        </div>
+        {% endif %}
+      </div>
+      <div class="col-md-4 mt-3">
+        <button class="btn btn-secondary" id="toggle-chats-btn">Ocultar/Mostrar Chats</button>
+        <button id="toggleModuleButton" class="btn btn-info mb-2 mt-3">Mostrar/Ocultar Módulo Maude</button>
+      </div>
+
     </div>
-    
-    </div>
+  </div>
 </body>
 
+</html>
 <script>
-  function loadFile() {
-      var input = document.getElementById("fileUpload");
-      var textarea = document.getElementById("maudeCode"); // Asegúrate de que este ID coincida con tu textarea
-      if (input.files && input.files[0]) {
-          var reader = new FileReader();
-          reader.onload = function(e) {
-              textarea.value = e.target.result;
-          }
-          reader.readAsText(input.files[0]);
-      } else {
-          alert("Por favor, selecciona un archivo primero.");
+  document.addEventListener('DOMContentLoaded', function () {
+    const chatColumn = document.querySelector('.col-md-4'); // Ajusta la clase según tu layout
+    const toggleButton = document.getElementById('toggle-chats-btn');
+
+    toggleButton.addEventListener('click', function () {
+      chatColumn.classList.toggle('hidden'); // 'hidden' es una clase que oculta el elemento
+    });
+  });
+  <!-- En tu script de JavaScript al final del archivo HTML -->
+  document.addEventListener("DOMContentLoaded", function () {
+    var chatLinks = document.querySelectorAll('.chat-link');
+    chatLinks.forEach(function (link) {
+      link.addEventListener('click', function (event) {
+        event.preventDefault();
+        var chatId = this.getAttribute('data-chat-id');
+        fetch(`/get_chat_content/${chatId}/`)
+          .then(response => response.json())
+          .then(data => {
+            const chatContainer = document.querySelector('.col-md-8');
+            let contentHtml = `
+              <h4 class="mt-3">${data.nombre}</h4>
+              <div id="maudeModuleSection" class="mb-3">
+                <h5>Módulo Maude:</h5>
+                <textarea class="form-control" rows="5">${data.maude_module}</textarea>
+              </div>
+              <div class="chat-history">`;
+            data.mensajes.forEach(mensaje => {
+              contentHtml += `
+                <div class="mensaje">
+                  <p class="usuario">Tú:</p>
+                  <p>${mensaje.comando}</p>
+                </div>
+                <div class="respuesta">
+                  <p class="maude">Maude:</p>
+                  <p>${mensaje.respuesta}</p>
+                </div>`;
+            });
+            contentHtml += `</div>
+              <div class="chat-input">
+                <form id="maudeForm" method="post">
+                  <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+                  <div class="input-group mb-3">
+                    <input type="text" id="maudeCommand" name="maude_execution" class="form-control" placeholder="Escribe tu comando aquí...">
+                    <button class="btn btn-primary" type="submit">Enviar</button>
+                  </div>
+                </form>
+              </div>`;
+            chatContainer.innerHTML = contentHtml;
+          })
+          .catch(error => console.error('Error:', error));
+      });
+    });
+
+    // Botón para ocultar/mostrar el código del módulo
+    document.getElementById("toggleModuleButton").addEventListener("click", function () {
+      var moduleSection = document.getElementById("maudeModuleSection");
+      if (moduleSection) {
+        moduleSection.classList.toggle("hidden");
       }
-  }
+    });
 
-  document.addEventListener("DOMContentLoaded", function() {
-    var form = document.getElementById("maudeForm");
-
-    form.addEventListener("submit", function(event) {
+    // Envío del formulario y actualización del chat
+    document.addEventListener('submit', function (event) {
+      if (event.target.id === "maudeForm") {
         event.preventDefault(); // Prevenir el envío tradicional del formulario
 
-        var formData = new FormData(form);
-        formData.append('csrfmiddlewaretoken', '{{ csrf_token }}'); // Añadir el token CSRF
+        var chatId = document.querySelector('.chat-link.active') ? document.querySelector('.chat-link.active').getAttribute('data-chat-id') : '';
+        if (chatId) {
+          var formData = new FormData(event.target);
+          formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+          formData.append('maude_code', document.getElementById('maudeCode').value);
 
-        // Realizar la solicitud AJAX
-        fetch("{% url 'run_maude_command' %}", {
+          // Realizar la solicitud AJAX
+          fetch(`/run_maude_command/${chatId}/`, {
             method: "POST",
             body: formData,
             headers: {
-                "X-Requested-With": "XMLHttpRequest", // Indicar que es una solicitud AJAX
+              "X-Requested-With": "XMLHttpRequest"
             },
-        })
-        .then(response => response.json()) // Convertir la respuesta a JSON
-        .then(data => {
-            // Actualizar el contenido de la página con la respuesta
-            document.querySelector(".result").innerHTML = `<h3>Resultado:</h3><p>${data.result}</p>`;
-        })
-        .catch(error => console.error('Error:', error));
+          })
+            .then(response => response.json())
+            .then(data => {
+              var historySection = document.querySelector('.chat-history');
+              if (historySection) {
+                historySection.innerHTML += `
+                  <div class="mensaje">
+                    <p class="usuario">Tú:</p>
+                    <p>${data.comando}</p>
+                  </div>
+                  <div class="respuesta">
+                    <p class="maude">Maude:</p>
+                    <p>${data.respuesta}</p>
+                  </div>`;
+                document.getElementById('maudeCommand').value = '';
+              }
+            })
+            .catch(error => console.error('Error:', error));
+        } else {
+          console.error("No hay un chat activo seleccionado.");
+        }
+      }
     });
-});
-  function loadExample(exampleName) {
-      var codeTextArea = document.getElementById("maudeCode");
-      switch (exampleName) {
-          case 'numerosNaturales':
-              codeTextArea.value = `fmod PEANO is
-                sort PeanoNat .
-                op 0 : -> PeanoNat [ctor] .
-                op s : PeanoNat -> PeanoNat [ctor] .
-                vars N M : PeanoNat .
-                op _+_ : PeanoNat PeanoNat -> PeanoNat [assoc comm] .
-                *** Caso 1: constructor 0
-                eq [s1] : 0 + N = N .
-                *** Caso 2: constructor sucesor
-                eq [s2] : s(N) + M = s(N + M) .
-                op _*_ : PeanoNat PeanoNat -> PeanoNat [assoc comm] .
-                eq 0 * N = 0 .
-                eq s(N) * M = M + (N * M) .
-                op esPositivo : PeanoNat -> Bool .
-                eq esPositivo(0) = false .
-                eq esPositivo(s(N)) = true .
-                endfm`;
-              break;
-          case 'pilas':
-              codeTextArea.value = `fmod PILA is
-                pr NAT .
-                sort Pila .
+  });
 
-                op pila-vacia : -> Pila [ctor] .
-                op apila : Nat Pila -> Pila [ctor] .
 
-                var N : Nat .
-                var P : Pila .
-
-                op desapila : Pila -> Pila .
-                eq desapila(pila-vacia) = pila-vacia .
-                eq desapila(apila(N, P)) = P .
-
-                op cima : Pila ~> Nat .
-                eq cima(apila(N, P)) = N .
-                endfm`;
-              break;
-          case 'listas':
-              codeTextArea.value =`fmod PERSONA is
-                pr STRING .
-                sort Persona .
-                op <_,_> : String Nat -> Persona [ctor] .
-                vars S S’ : String .
-                vars N N’ : Nat .
-
-                ops max min : Persona Persona -> Persona [comm] .
-                ceq [max] : max(< S, N >, < S’, N’ >) = < S, N >
-                if N >= N’ .
-                ceq [min] : min(< S, N >, < S’, N’ >) = < S, N >
-                if N <= N’ .
-
-                ops max min : Persona Persona -> Persona [comm] .
-                eq [max] : max(< S, N >, < S’, N’ >) = if N >= N’
-                then < S, N >
-                else < S’, N’ >
-                fi .
-                eq [min] : min(< S, N >, < S’, N’ >) = N <= N’
-                then < S, N >
-                else < S’, N’ >
-                fi .
-
-                ops _<=_ _>_ : Persona Persona -> Bool .
-                eq < S, N > <= < S’, N’ > = N <= N’ .
-                eq < S, N > > < S’, N’ > = N > N’ .
-
-                ops a b c d : -> Persona .
-                eq a = < "a", 100 > .
-                eq b = < "b", 80 > .
-                eq c = < "c", 150 > .
-                eq d = < "d", 10 > .
-                endfm
-
-                fmod LISTA is
-                pr PERSONA .
-                sorts Lista ListaOrd .
-
-                subsort Persona < ListaOrd < Lista .
-
-                op lv : -> ListaOrd [ctor] .
-                op __ : Lista Lista -> Lista [ctor assoc id: lv] .
-                vars P P’ : Persona .
-                vars L L’ : Lista .
-                var LO : ListaOrd .
-
-                cmb P P’ L : ListaOrd
-                if P <= P’ /\
-                P’ L : ListaOrd .
-
-                op head : Lista ~> Persona .
-                eq head(P L) = P .
-
-                op tail : Lista ~> Lista .
-                eq tail(P L) = L .
-
-                op tam : Lista -> Nat .
-                eq tam(lv) = 0 .
-                eq tam(P L) = s(tam(L)) .
-
-                op esta? : Lista Persona -> Bool .
-                eq esta?(L P L’, P) = true .
-                eq esta?(L, P) = false [owise] .
-
-                op ordena : Lista -> Lista .
-                ceq ordena(L P P’ L’) = ordena(L P’ P L’)
-                if P > P’ .
-                eq ordena(L) = L [owise] .
-
-                op inserta-ord : ListaOrd Persona -> ListaOrd .
-                eq inserta-ord(lv, P) = P .
-                eq inserta-ord(P L, P’) = if P <= P’
-                then P inserta-ord(L, P’)
-                else P’ P L
-                fi .
-
-                op ordena-por-insercion : ListaOrd -> ListaOrd .
-                eq ordena-por-insercion(lv) = lv .
-                ceq ordena-por-insercion(P L) = inserta-ord(L’, P)
-                if L’ := ordena-por-insercion(L) .
-                endfm`
-              break;
-              case 'die-hard':
-              codeTextArea.value = `mod DIE-HARD is
-                    protecting NAT .
-                    sorts Vasija ConjVasija .
-                    subsort Vasija < ConjVasija .
-                    op vasija : Nat Nat -> Vasija [ctor] . 
-                    op __ : ConjVasija ConjVasija -> ConjVasija [ctor assoc comm] .
-                    vars M1 N1 M2 N2 : Nat .
-                    op initial : -> ConjVasija .
-                    eq initial = vasija(3, 0) vasija(5, 0) vasija(8,0) .
-                    rl [vacia] : vasija(M1, N1) => vasija(M1, 0) .
-                    rl [llena] : vasija(M1, N1) => vasija(M1, M1) .
-
-                    crl [transfer1] : vasija(M1, N1) vasija(M2, N2)
-                    => vasija(M1, 0) vasija(M2, N1 + N2)
-                    if N1 + N2 <= M2 .
-
-                    crl [transfer2] : vasija(M1, N1) vasija(M2, N2)
-                    => vasija(M1, sd(N1 + N2, M2)) vasija(M2, M2)
-                    if N1 + N2 > M2 .
-                    endm`;
-              break;}}
-  </script>
-</html>
+</script>

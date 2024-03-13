@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
-from .models import Usuario
+from .models import Chat, Mensaje, Usuario
 
 class UsuarioAdmin(BaseUserAdmin):
     model = Usuario
@@ -20,5 +20,21 @@ class UsuarioAdmin(BaseUserAdmin):
     search_fields = ('email', 'nombre')
     ordering = ('email', 'nombre')
     filter_horizontal = ()  # Mantén esto vacío si tu modelo no usa 'groups' ni 'user_permissions'
+
+class ChatAdmin(admin.ModelAdmin):
+    list_display = ['nombre', 'usuario']  # Puedes ajustar esta lista para mostrar los campos deseados
+    search_fields = ['nombre', 'usuario__email']  # Permite buscar por nombre de chat y email del usuario
+    list_filter = ['usuario']  # Permite filtrar por usuario
+
+admin.site.register(Chat, ChatAdmin)
+
+class MensajeAdmin(admin.ModelAdmin):
+    list_display = ['chat', 'comando', 'fecha_creacion']  # Ajusta a los campos que quieras mostrar
+    search_fields = ['chat__nombre', 'comando']  # Buscar por nombre del chat y comando
+    list_filter = ['chat', 'fecha_creacion']  # Filtrar por chat y fecha de creación
+    date_hierarchy = 'fecha_creacion'  # Permite navegar rápidamente a través de las fechas
+
+admin.site.register(Mensaje, MensajeAdmin)
+
 
 admin.site.register(Usuario, UsuarioAdmin)

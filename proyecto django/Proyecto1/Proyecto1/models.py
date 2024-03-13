@@ -1,6 +1,7 @@
 import uuid
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
+from django.contrib.auth import get_user_model
 
 # Crea un nuevo UserManager para tu modelo de usuario personalizado
 class UsuarioManager(BaseUserManager):
@@ -57,3 +58,15 @@ class Usuario(AbstractBaseUser):
     @property
     def is_staff(self):
         return self.is_admin
+
+
+
+class Chat(models.Model):
+    nombre = models.CharField(max_length=100)
+    usuario = models.ForeignKey('Proyecto1.Usuario', on_delete=models.CASCADE, related_name='chats')
+
+class Mensaje(models.Model):
+    chat = models.ForeignKey(Chat, related_name='mensajes', on_delete=models.CASCADE)
+    comando = models.TextField()
+    respuesta = models.TextField()
+    fecha_creacion = models.DateTimeField(auto_now_add=True)
