@@ -23,20 +23,7 @@ import itertools
 @login_required
 def home(request, chat_id=None):
     chats = Chat.objects.filter(usuario=request.user).order_by('-id')
-    chat_actual = None
-    mensajes = []
-
-    if chat_id:
-        chat_actual = Chat.objects.filter(id=chat_id, usuario=request.user).first()
-        if chat_actual:
-            mensajes = Mensaje.objects.filter(chat=chat_actual).order_by('-fecha_creacion')
-    
-    context = {
-        'chats': chats,
-        'chat_actual': chat_actual,
-        'mensajes': mensajes,
-    }
-    return render(request, 'home.html', context)
+    return render(request, 'home.html', {'chats': chats})
 
 def chat_view(request, chat_id):
     chat = Chat.objects.get(id=chat_id)
@@ -61,6 +48,7 @@ def get_chat_content(request, chat_id):
     } for mensaje in mensajes]
     chat_data = {
         'nombre': chat.nombre,
+        'modulo':chat.modulo,
         'mensajes': mensajes_data,
         # Agrega aquí más datos si necesitas
     }
@@ -70,8 +58,9 @@ def get_chat_content(request, chat_id):
 def new_chat(request):
     if request.method == "POST":
         nombre = request.POST.get("nombre_chat")
-        nuevo_chat = Chat.objects.create(nombre=nombre, usuario=request.user)
+        Chat.objects.create(nombre=nombre, usuario=request.user)
         return redirect('home')
+    
     return render(request, 'new_chat.html')
 
 
@@ -131,6 +120,7 @@ def register(request):
 
 @require_http_methods(["POST"])
 def run_maude_command(request, chat_id):
+    print("Entrando a run_maude_command")
     chat = Chat.objects.get(id=chat_id, usuario=request.user)
     if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
         maude_execution = request.POST.get('maude_execution')
@@ -254,6 +244,8 @@ def run_maude_command(request, chat_id):
         # Añadir más condiciones según sea necesario
 
         response = str(resultado)
+        chat.modulo = user_code
+        chat.save()
         Mensaje.objects.create(chat=chat, comando=maude_execution, respuesta=response)
 
         # Devolver la respuesta como JSON

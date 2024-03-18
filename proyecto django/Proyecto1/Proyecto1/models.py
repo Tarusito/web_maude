@@ -63,6 +63,7 @@ class Usuario(AbstractBaseUser):
 
 class Chat(models.Model):
     nombre = models.CharField(max_length=100)
+    modulo = models.TextField(default='')
     usuario = models.ForeignKey('Proyecto1.Usuario', on_delete=models.CASCADE, related_name='chats')
 
 class Mensaje(models.Model):

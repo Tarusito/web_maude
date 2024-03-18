@@ -14,6 +14,26 @@
     .hidden {
       display: none;
     }
+
+    .chat-container {
+      display: flex;
+      flex-direction: column;
+      height: 80vh; /* Ajusta la altura según necesidades */
+      justify-content: space-between; /* Esto asegura que el input se mantiene abajo */
+    }
+
+    .chat-history {
+      overflow-y: auto;
+      flex-grow: 1; /* Ocupa todo el espacio disponible */
+      max-height: 75vh; /* Ajusta la altura máxima según necesidades */
+      margin-bottom: 20px; /* Espacio antes del input */
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+
+    .chat-input {
+      flex-shrink: 0; /* Evita que el input se reduzca */
+    }
   </style>
 </head>
 
@@ -80,16 +100,16 @@
             <div id="maudeModuleSection" class="mb-3">
               <h5>Módulo Maude:</h5>
               <textarea class="form-control" id="maudeCode" name="maude_code"
-                rows="5">{{ chat_actual.maude_module }}</textarea>
+                rows="5">{{ chat_actual.modulo }}</textarea>
             </div>
             <!-- Formulario para enviar nuevos comandos -->
             <div class="chat-input">
-              <form id="maudeForm" action="" method="post">
+              <form id="maudeForm">
                 {% csrf_token %}
                 <div class="input-group mb-3">
                   <input type="text" id="maudeCommand" name="maude_execution" class="form-control"
                     placeholder="Escribe tu comando Maude aquí...">
-                  <button class="btn btn-primary" type="submit">Enviar</button>
+                  <button class="btn btn-primary" type="button">Enviar</button>
                 </div>
               </form>
             </div>
@@ -128,16 +148,22 @@
     chatLinks.forEach(function (link) {
       link.addEventListener('click', function (event) {
         event.preventDefault();
+        const currentActive = document.querySelector('.chat-link.active');
+            if (currentActive) {
+                currentActive.classList.remove('active');
+            }
+            this.classList.add('active');
         var chatId = this.getAttribute('data-chat-id');
         fetch(`/get_chat_content/${chatId}/`)
           .then(response => response.json())
           .then(data => {
+            console.log(data);
             const chatContainer = document.querySelector('.col-md-8');
             let contentHtml = `
               <h4 class="mt-3">${data.nombre}</h4>
               <div id="maudeModuleSection" class="mb-3">
                 <h5>Módulo Maude:</h5>
-                <textarea class="form-control" rows="5">${data.maude_module}</textarea>
+                <textarea id="maudeCode" class="form-control" rows="5">${data.modulo}</textarea>
               </div>
               <div class="chat-history">`;
             data.mensajes.forEach(mensaje => {
@@ -153,11 +179,11 @@
             });
             contentHtml += `</div>
               <div class="chat-input">
-                <form id="maudeForm" method="post">
+                <form id="maudeForm">
                   <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
                   <div class="input-group mb-3">
                     <input type="text" id="maudeCommand" name="maude_execution" class="form-control" placeholder="Escribe tu comando aquí...">
-                    <button class="btn btn-primary" type="submit">Enviar</button>
+                    <button class="btn btn-primary" type="button">Enviar</button>
                   </div>
                 </form>
               </div>`;
@@ -174,48 +200,59 @@
         moduleSection.classList.toggle("hidden");
       }
     });
+    
+    function sendMaudeCommand() {
+      const activeChatLink = document.querySelector('.chat-link.active');
+      const chatId = activeChatLink ? activeChatLink.getAttribute('data-chat-id') : '';
 
-    // Envío del formulario y actualización del chat
-    document.addEventListener('submit', function (event) {
-      if (event.target.id === "maudeForm") {
-        event.preventDefault(); // Prevenir el envío tradicional del formulario
+      if (!chatId) {
+        console.error("No hay un chat activo seleccionado.");
+        return;
+      }
+      var commandInput = document.getElementById('maudeCommand');
+      var csrfToken = document.querySelector('[name="csrfmiddlewaretoken"]').value;
+      var maudeCode = document.getElementById('maudeCode').value;
+      var formData = new FormData();
+      formData.append('csrfmiddlewaretoken', csrfToken);
+      formData.append('maude_code', maudeCode);
+      formData.append('maude_execution', commandInput.value);
 
-        var chatId = document.querySelector('.chat-link.active') ? document.querySelector('.chat-link.active').getAttribute('data-chat-id') : '';
-        if (chatId) {
-          var formData = new FormData(event.target);
-          formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
-          formData.append('maude_code', document.getElementById('maudeCode').value);
-
-          // Realizar la solicitud AJAX
-          fetch(`/run_maude_command/${chatId}/`, {
-            method: "POST",
-            body: formData,
-            headers: {
-              "X-Requested-With": "XMLHttpRequest"
-            },
-          })
-            .then(response => response.json())
-            .then(data => {
-              var historySection = document.querySelector('.chat-history');
-              if (historySection) {
-                historySection.innerHTML += `
-                  <div class="mensaje">
-                    <p class="usuario">Tú:</p>
-                    <p>${data.comando}</p>
-                  </div>
-                  <div class="respuesta">
-                    <p class="maude">Maude:</p>
-                    <p>${data.respuesta}</p>
-                  </div>`;
-                document.getElementById('maudeCommand').value = '';
-              }
-            })
-            .catch(error => console.error('Error:', error));
-        } else {
-          console.error("No hay un chat activo seleccionado.");
+      fetch(`/run_maude_command/${chatId}/`, {
+        method: "POST",
+        body: formData,
+        headers: { "X-Requested-With": "XMLHttpRequest" },
+      })
+      .then(response => response.json())
+      .then(data => {
+        const historySection = document.querySelector('.chat-history');
+        if (historySection) {
+          historySection.innerHTML += `
+            <div class="mensaje">
+              <p class="usuario">Tú:</p>
+              <p>${data.comando}</p>
+            </div>
+            <div class="respuesta">
+              <p class="maude">Maude:</p>
+              <p>${data.respuesta}</p>
+            </div>`;
+          commandInput.value = '';
         }
+      })
+      .catch(error => console.error('Error:', error));
+    }
+
+    // Asigna el controlador sendMaudeCommand al botón de enviar en el formulario actualizado del chat
+    document.addEventListener('click', function (event) {
+      if (event.target && event.target.matches("#maudeForm .btn-primary")) {
+        sendMaudeCommand();
       }
     });
+
+    const chatHistory = document.querySelector('.chat-history');
+    if (chatHistory) {
+        chatHistory.scrollTop = chatHistory.scrollHeight;
+    }
+
   });
 
 
