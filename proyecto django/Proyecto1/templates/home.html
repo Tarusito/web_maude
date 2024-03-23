@@ -51,9 +51,6 @@
             <a class="nav-link active" aria-current="page" href="/home">Home</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="#">Ejecutar código</a>
-          </li>
-          <li class="nav-item">
             <a class="nav-link" href="{% url 'logout' %}">Cerrar sesión</a>
           </li>
         </ul>
@@ -64,7 +61,7 @@
   <div class="container mt-5">
     <div class="row">
       <!-- Columna para los chats -->
-      <div class="col-md-4 mt-3">
+      <div class="col-md-2 mt-3">
         <h4>Chats</h4>
         <div class="list-group">
           {% for chat in chats %}
@@ -123,11 +120,10 @@
         </div>
         {% endif %}
       </div>
-      <div class="col-md-4 mt-3">
+      <div class="col-md-2 mt-3">
         <button class="btn btn-secondary" id="toggle-chats-btn">Ocultar/Mostrar Chats</button>
         <button id="toggleModuleButton" class="btn btn-info mb-2 mt-3">Mostrar/Ocultar Módulo Maude</button>
       </div>
-
     </div>
   </div>
 </body>
