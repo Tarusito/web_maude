@@ -1,16 +1,11 @@
-from imaplib import _Authenticator
 import re
-from telnetlib import LOGOUT
 from django.core.mail import send_mail
 from django.conf import settings
-from django.http import HttpResponse
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
-from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 from .forms import RegistrationForm, UserLoginForm
 from django.contrib.auth import login as auth_login
-from django.template import loader
 from .forms import RegistrationForm
 from django.contrib.auth import authenticate, logout
 from django.contrib.auth.decorators import login_required
@@ -19,6 +14,9 @@ import maude
 import itertools
 
 #Cada funcion que hay aquí es una vista
+@login_required
+def blank(request):
+    return redirect('home', chat_id=None)
 
 @login_required
 def home(request, chat_id=None):
@@ -40,7 +38,7 @@ def chat_view(request, chat_id):
 def get_chat_content(request, chat_id):
     # Asegúrate de que solo los usuarios autorizados puedan acceder a sus chats
     chat = get_object_or_404(Chat, id=chat_id, usuario=request.user)
-    mensajes = Mensaje.objects.filter(chat=chat).order_by('-fecha_creacion')
+    mensajes = Mensaje.objects.filter(chat=chat).order_by('fecha_creacion')
     mensajes_data = [{
         'comando': mensaje.comando,
         'respuesta': mensaje.respuesta,
@@ -63,6 +61,14 @@ def new_chat(request):
     
     return render(request, 'new_chat.html')
 
+@login_required
+def saveModule(request, chat_id):
+    print("ha entrado en save module")
+    chat = Chat.objects.get(id=chat_id, usuario=request.user)
+    modulo = request.POST.get()
+    chat.modulo = modulo
+    chat.save()
+    
 
 def logout_request(request):
     logout(request)

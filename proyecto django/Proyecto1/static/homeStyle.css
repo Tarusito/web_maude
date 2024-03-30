@@ -1,0 +1,23 @@
+.hidden {
+    display: none;
+  }
+
+  .chat-container {
+    display: flex;
+    flex-direction: column;
+    height: 80vh; /* Ajusta la altura según necesidades */
+    justify-content: space-between; /* Esto asegura que el input se mantiene abajo */
+  }
+
+  .chat-history {
+    overflow-y: auto;
+    flex-grow: 1; /* Ocupa todo el espacio disponible */
+    max-height: 75vh; /* Ajusta la altura máxima según necesidades */
+    margin-bottom: 20px; /* Espacio antes del input */
+    border: 1px solid #ccc;
+    border-radius: 5px;
+  }
+
+  .chat-input {
+    flex-shrink: 0; /* Evita que el input se reduzca */
+  }

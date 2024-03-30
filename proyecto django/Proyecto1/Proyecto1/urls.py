@@ -20,6 +20,7 @@ from Proyecto1 import views  # Importa la vista 'home' desde 'Proyecto1.views'
 from django.contrib.auth import views as auth_views
 
 urlpatterns = [
+    path('', views.home, name='home'),
     path('admin/', admin.site.urls),
     path('home/', views.home, name='home'),  # Usa 'home' directamente como vistaç
     path('register/', views.register, name='register'),
@@ -31,6 +32,7 @@ urlpatterns = [
     path('chat/<int:chat_id>/', views.chat_view, name='chat'),
     path('run_maude_command/<int:chat_id>/', views.run_maude_command, name='run_maude_command'),
     path('get_chat_content/<int:chat_id>/', views.get_chat_content, name='get_chat_content'),
+    path('saveModule/<int:chat_id>/', views.saveModule, name='saveModule'),
 
 ]
 

@@ -9,6 +9,7 @@ https://docs.djangoproject.com/en/5.0/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.0/ref/settings/
 """
+import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -24,7 +25,7 @@ SECRET_KEY = 'django-insecure-k(4&*aguj&-s9p^#q5rtgw4wplk05!-6jg%x(6c9jnrqx3(@kg
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['pedroprz.pythonanywhere.com', 'localhost', '127.0.0.1']
 
 
 # Application definition
@@ -67,6 +68,12 @@ TEMPLATES = [
         },
     },
 ]
+
+STATICFILES_DIRS = (
+    os.path.join(BASE_DIR, "static"),
+)
+
+STATIC_URL = '/static/'
 
 WSGI_APPLICATION = 'Proyecto1.wsgi.application'
 
