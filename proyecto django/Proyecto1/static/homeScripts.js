@@ -44,6 +44,8 @@ document.addEventListener('DOMContentLoaded', function () {
   
   document.addEventListener("DOMContentLoaded", function () {
     var chatLinks = document.querySelectorAll('.chat-link');
+    var maudeLogoUrl = document.getElementById('staticUrlsMaude').getAttribute('data-maude-logo-url');
+    var userLogoUrl = document.getElementById('staticUrlsUser').getAttribute('data-user-logo-url');
     chatLinks.forEach(function (link) {
       link.addEventListener('click', function (event) {
         event.preventDefault();
@@ -69,14 +71,23 @@ document.addEventListener('DOMContentLoaded', function () {
             let contentModal = data.modulo;         
             data.mensajes.forEach(mensaje => {
               contentHtml += `
-                <div class="mensaje">
-                  <p class="usuario">Tú:</p>
-                  <p>${mensaje.comando}</p>
-                </div>
-                <div class="respuesta">
-                  <p class="maude">Maude:</p>
-                  <p>${mensaje.respuesta}</p>
-                </div>`;
+              <div class="mensaje">
+              <div class="row">
+                <p class="usuario"><img src="${userLogoUrl}" alt="logoMaude" width="30" height="30">Tú:</p>
+              </div>
+              <div class="row">
+                <p>${mensaje.comando}</p>
+              </div>
+            </div>
+            
+            <div class="respuesta">
+              <div class="row">
+                  <p class="maude"><img src="${maudeLogoUrl}" alt="logoMaude" width="30" height="30">Maude:</p>
+              </div>
+              <div class="row">
+                <p>${mensaje.respuesta}</p>
+              </div>
+            </div>`;
             });
             contentHtml += `</div>
               <div class="chat-input">

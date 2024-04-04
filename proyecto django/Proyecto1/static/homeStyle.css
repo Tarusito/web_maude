@@ -25,3 +25,7 @@ body{
     flex-shrink: 0; /* Evita que el input se reduzca */
   }
 
+  .imagenChat{
+    border-radius: 50%;
+  }
+

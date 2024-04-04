@@ -99,10 +99,10 @@
         {% endif %}
       </div>
       <div class="col-md-2 mt-3">
-        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal">
+        <button type="button" class="btn btn-primary mt-3" data-bs-toggle="modal" data-bs-target="#exampleModal">
           Cambiar Modulo
         </button>
-        <button class="btn btn-secondary" id="toggle-chats-btn">Ocultar/Mostrar Chats</button>
+        <button class="btn btn-secondary mt-3" id="toggle-chats-btn">Ocultar/Mostrar Chats</button>
       </div>
     </div>
   </div>
@@ -127,4 +127,11 @@
     </div>
   </div>
 </div>
+
+<!-- Elemento de ejemplo para almacenar la URL estática, no se muestra realmente al usuario -->
+<div id="staticUrlsMaude" data-maude-logo-url="{% static 'maude_logo.jpg' %}" style="display:none;"></div>
+<div id="staticUrlsUser" data-user-logo-url="{% static 'user_default.jpg' %}" style="display:none;"></div>
+
+
+
 </html>
