@@ -9,6 +9,11 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
 
 </head>
+<style>
+    body{
+        background-color: #FFDE9C;
+    }
+</style>
 <body>
 
     {% block content %}
@@ -36,6 +41,11 @@
                     </div>
                     <button type="submit" class="btn btn-primary mt-3">Registrar</button>
                 </form>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6 offset-md-3">
+                <p class="mt-4">¿Ya tienes una cuenta? <a href="{% url 'login' %}">Inicia sesión</a></p>
             </div>
         </div>
     </div>

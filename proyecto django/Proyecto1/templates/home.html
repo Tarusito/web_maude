@@ -4,6 +4,7 @@
 <head>
   {% load static %}
   <meta charset="UTF-8">
+  <meta name="csrf-token" content="{{ csrf_token }}">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Home</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
@@ -80,7 +81,6 @@
             <!-- Formulario para enviar nuevos comandos -->
             <div class="chat-input">
               <form id="maudeForm">
-                {% csrf_token %}
                 <div class="input-group mb-3">
                   <input type="text" id="maudeCommand" name="maude_execution" class="form-control"
                     placeholder="Escribe tu comando Maude aquí...">
@@ -116,13 +116,13 @@
         <h5 class="modal-title" id="exampleModalLabel">Escribe tu módulo de maude</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
-      <div class="modal-body">
+      <div class="modal-body" id="cuerpoModal" chat="">
         <textarea class="form-control" id="maudeModuloModal" name="maude_code"
                 rows="5">{{ chat_actual.modulo }}</textarea>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-        <button type="button" class="btn btn-primary" id="modalBoton">Save changes</button>
+        <button type="button" class="btn btn-primary" id="modalBoton" >Save changes</button>
       </div>
     </div>
   </div>

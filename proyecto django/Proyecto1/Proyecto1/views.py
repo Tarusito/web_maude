@@ -63,11 +63,12 @@ def new_chat(request):
 
 @login_required
 def saveModule(request, chat_id):
-    print("ha entrado en save module")
     chat = Chat.objects.get(id=chat_id, usuario=request.user)
-    modulo = request.POST.get()
+    modulo = request.body.decode('utf-8')
+    print(modulo)
     chat.modulo = modulo
     chat.save()
+    return JsonResponse({'status': 'success', 'message': 'Módulo guardado correctamente.'})
     
 
 def logout_request(request):

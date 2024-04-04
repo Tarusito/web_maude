@@ -7,28 +7,40 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   });
 
-  //funcion para guardar el modulo en la base de datos con el modal
   document.addEventListener('DOMContentLoaded', function () {
-    const botonModalModulo = document.getElementById('modalBoton'); // Ajusta la clase según tu layout
-
+    const botonModalModulo = document.getElementById('modalBoton');
     botonModalModulo.addEventListener('click', function () {
-      const chatId = activeChatLink ? activeChatLink.getAttribute('data-chat-id') : '';
-
-      if (!chatId) {
-        console.error("No hay un chat activo seleccionado.");
-        return;
-      }
-
+      const modalBody = document.getElementById('cuerpoModal');
+      var chatId = modalBody.getAttribute('chat');
       const moduloMaude = document.getElementById('maudeModuloModal').value;
+      // Obtener el token CSRF del meta tag
+      const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+      console.log(moduloMaude);
+      console.log(csrfToken); // Esto debería mostrarte el token CSRF correctamente en la consola.
+  
       fetch(`/saveModule/${chatId}/`, {
         method: "POST",
         body: moduloMaude,
-        headers: { "X-Requested-With": "XMLHttpRequest" },
+        headers: {
+          "X-Requested-With": "XMLHttpRequest",
+          "X-CSRFToken": csrfToken, // Asegúrate de que el nombre de la cabecera es "X-CSRFToken"
+          "Content-Type": "application/json" // Añadido para asegurar que el contenido se envía como JSON
+        },
+      })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+        return response.json(); // O manejar la respuesta según sea necesario.
+      })
+      .then(data => {
+        console.log(data); // Procesar los datos de la respuesta.
       })
       .catch(error => console.error('Error:', error));
-    })
-  
+    });
   });
+  
+  
   
   document.addEventListener("DOMContentLoaded", function () {
     var chatLinks = document.querySelectorAll('.chat-link');
@@ -46,13 +58,15 @@ document.addEventListener('DOMContentLoaded', function () {
           .then(data => {
             console.log(data);
             const chatContainer = document.querySelector('.col-md-8');
+            const moduloContainer = document.getElementById('maudeModuloModal');
+            const idChat = document.getElementById('cuerpoModal')
+            idChat.setAttribute('chat', chatId);
+            moduloContainer
             let contentHtml = `
-              <h4 class="mt-3">${data.nombre}</h4>
-              <div id="maudeModuleSection" class="mb-3">
-                <h5>Módulo Maude:</h5>
-                <textarea id="maudeCode" class="form-control" rows="5">${data.modulo}</textarea>
-              </div>
-              <div class="chat-history">`;
+            <h4 class="mt-3">${data.nombre}</h4>
+            <div class="chat-history">
+              `;
+            let contentModal = data.modulo;         
             data.mensajes.forEach(mensaje => {
               contentHtml += `
                 <div class="mensaje">
@@ -75,30 +89,26 @@ document.addEventListener('DOMContentLoaded', function () {
                 </form>
               </div>`;
             chatContainer.innerHTML = contentHtml;
+            moduloContainer.innerHTML = contentModal;
           })
           .catch(error => console.error('Error:', error));
       });
     });
 
-    // Botón para ocultar/mostrar el código del módulo
-    document.getElementById("toggleModuleButton").addEventListener("click", function () {
-      var moduleSection = document.getElementById("maudeModuleSection");
-      if (moduleSection) {
-        moduleSection.classList.toggle("hidden");
-      }
-    });
     
     function sendMaudeCommand() {
       const activeChatLink = document.querySelector('.chat-link.active');
       const chatId = activeChatLink ? activeChatLink.getAttribute('data-chat-id') : '';
+
+      console.log("entro en el sendcomando");
 
       if (!chatId) {
         console.error("No hay un chat activo seleccionado.");
         return;
       }
       var commandInput = document.getElementById('maudeCommand');
-      var csrfToken = document.querySelector('[name="csrfmiddlewaretoken"]').value;
-      var maudeCode = document.getElementById('maudeCode').value;
+      const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+      var maudeCode = document.getElementById('maudeModuloModal').value;
       var formData = new FormData();
       formData.append('csrfmiddlewaretoken', csrfToken);
       formData.append('maude_code', maudeCode);
@@ -130,6 +140,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Asigna el controlador sendMaudeCommand al botón de enviar en el formulario actualizado del chat
     document.addEventListener('click', function (event) {
+      console.log("entro en el click");
       if (event.target && event.target.matches("#maudeForm .btn-primary")) {
         sendMaudeCommand();
       }

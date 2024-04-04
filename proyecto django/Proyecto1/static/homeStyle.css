@@ -1,3 +1,6 @@
+body{
+  background-color: #FFDE9C;
+}
 .hidden {
     display: none;
   }
@@ -14,10 +17,11 @@
     flex-grow: 1; /* Ocupa todo el espacio disponible */
     max-height: 75vh; /* Ajusta la altura máxima según necesidades */
     margin-bottom: 20px; /* Espacio antes del input */
-    border: 1px solid #ccc;
+    border: 1px solid #000000;
     border-radius: 5px;
   }
 
   .chat-input {
     flex-shrink: 0; /* Evita que el input se reduzca */
   }
+

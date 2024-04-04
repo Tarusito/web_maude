@@ -34,8 +34,8 @@ class RegistrationForm(forms.Form):
         return cleaned_data
     
 class UserLoginForm(AuthenticationForm):
-    username = forms.EmailField(widget=forms.EmailInput(attrs={'class': 'validate', 'placeholder': 'Correo UCM', 'autofocus': True}))
-    password = forms.CharField(widget=forms.PasswordInput(attrs={'placeholder': 'Contraseña'}))
+    username = forms.EmailField(widget=forms.EmailInput(attrs={'class': 'validate form-control', 'placeholder': 'Correo UCM', 'autofocus': True}))
+    password = forms.CharField(widget=forms.PasswordInput(attrs={'class': 'form-control', 'placeholder': 'Contraseña'}))
 
     def __init__(self, *args, **kwargs):
         super(UserLoginForm, self).__init__(*args, **kwargs)
