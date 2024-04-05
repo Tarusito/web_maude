@@ -33,6 +33,11 @@ urlpatterns = [
     path('run_maude_command/<int:chat_id>/', views.run_maude_command, name='run_maude_command'),
     path('get_chat_content/<int:chat_id>/', views.get_chat_content, name='get_chat_content'),
     path('saveModule/<int:chat_id>/', views.saveModule, name='saveModule'),
-
+    path('password_reset/', views.password_reset_request, name='password_reset_request'),
+    path('password_recover/', views.password_reset_request, name='password_recover'),
+    path('password_reset_confirm/<uidb64>/<token>/', auth_views.PasswordResetConfirmView.as_view(), name='password_reset_confirm'),
+    path('password_reset_done/', auth_views.PasswordResetDoneView.as_view(), name='password_reset_done'),
+    path('password_reset_confirm/<uidb64>/<token>/', auth_views.PasswordResetConfirmView.as_view(), name='password_reset_confirm'),
+    path('password_reset_complete/', auth_views.PasswordResetCompleteView.as_view(template_name='registration/password_reset_complete.html'), name='password_reset_complete'),
 ]
 

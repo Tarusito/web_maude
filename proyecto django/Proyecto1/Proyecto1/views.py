@@ -4,7 +4,7 @@ from django.conf import settings
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_http_methods
-from .forms import RegistrationForm, UserLoginForm
+from .forms import PasswordResetRequestForm, RegistrationForm, UserLoginForm
 from django.contrib.auth import login as auth_login
 from .forms import RegistrationForm
 from django.contrib.auth import authenticate, logout
@@ -12,6 +12,18 @@ from django.contrib.auth.decorators import login_required
 from .models import Chat, Mensaje, Usuario
 import maude
 import itertools
+from django.urls import reverse_lazy
+from django.utils.http import urlsafe_base64_encode
+from django.utils.encoding import force_bytes
+from django.contrib.auth.tokens import default_token_generator
+from .models import Usuario
+from .forms import PasswordResetRequestForm
+from django.urls import reverse
+from django.contrib.auth.tokens import default_token_generator
+from django.utils.http import urlsafe_base64_encode
+from django.utils.encoding import force_bytes
+from .forms import PasswordResetRequestForm
+from django.contrib.auth import get_user_model
 
 #Cada funcion que hay aquí es una vista
 @login_required
@@ -22,6 +34,33 @@ def blank(request):
 def home(request, chat_id=None):
     chats = Chat.objects.filter(usuario=request.user).order_by('-id')
     return render(request, 'home.html', {'chats': chats})
+
+def password_reset_request(request):
+    if request.method == "POST":
+        form = PasswordResetRequestForm(request.POST)
+        if form.is_valid():
+            email = form.cleaned_data["email"]
+            Usuario = get_user_model()
+            associated_users = Usuario.objects.filter(email=email)
+            if associated_users.exists():
+                for user in associated_users:
+                    # Crear el token y el uid
+                    uid = urlsafe_base64_encode(force_bytes(user.pk))
+                    token = default_token_generator.make_token(user)
+                    # Construir el enlace de restablecimiento de contraseña
+                    link = request.build_absolute_uri(reverse('password_reset_confirm', kwargs={'uidb64': uid, 'token': token}))
+                    # Construir el mensaje de correo
+                    subject = 'Restablecimiento de contraseña'
+                    message = f'Por favor, haz clic en el siguiente enlace para restablecer tu contraseña: {link}'
+                    email_from = settings.EMAIL_HOST_USER
+                    recipient_list = [user.email]
+                    # Enviar el correo
+                    send_mail(subject, message, email_from, recipient_list)
+                # Podrías redirigir a una página de éxito o renderizar un mensaje en este punto
+                return redirect('password_reset_done')
+    else:
+        form = PasswordResetRequestForm()
+    return render(request, "registration/password_reset_form.html", {"form": form})
 
 def chat_view(request, chat_id):
     chat = Chat.objects.get(id=chat_id)

@@ -1,31 +1,38 @@
 body{
-  background-color: #FFDE9C;
+  background-color: #ffffff;
 }
 .hidden {
-    display: none;
-  }
+  display: none;
+}
 
-  .chat-container {
-    display: flex;
-    flex-direction: column;
-    height: 80vh; /* Ajusta la altura según necesidades */
-    justify-content: space-between; /* Esto asegura que el input se mantiene abajo */
-  }
+.chat-container {
+  display: flex;
+  flex-direction: column;
+  height: 80vh; /* Ajusta la altura según necesidades */
+  justify-content: space-between; /* Esto asegura que el input se mantiene abajo */
+}
 
-  .chat-history {
-    overflow-y: auto;
-    flex-grow: 1; /* Ocupa todo el espacio disponible */
-    max-height: 75vh; /* Ajusta la altura máxima según necesidades */
-    margin-bottom: 20px; /* Espacio antes del input */
-    border: 1px solid #000000;
-    border-radius: 5px;
-  }
+.chat-history {
+  overflow-y: auto;
+  flex-grow: 1;
+  max-height: 70vh;
+  min-height: 70vh; /* Ajusta esto según lo que necesites */
+  margin-bottom: 10px;
+  border: 1px solid #000000;
+  border-radius: 5px;
+  padding: 10px; /* Para un poco de espacio interno */
+}
 
-  .chat-input {
-    flex-shrink: 0; /* Evita que el input se reduzca */
-  }
+.chat-input {
+  flex-shrink: 0; /* Evita que el input se reduzca */
+}
 
-  .imagenChat{
-    border-radius: 50%;
-  }
+.list-group{
+  overflow-y: scroll;
+  max-height: 50%;
+}
+
+.imagenChat{
+  border-radius: 50%;
+}
 

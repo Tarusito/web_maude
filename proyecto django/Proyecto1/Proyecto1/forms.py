@@ -41,3 +41,6 @@ class UserLoginForm(AuthenticationForm):
         super(UserLoginForm, self).__init__(*args, **kwargs)
         # Cambia el label del campo 'username' a 'Correo electrónico'
         self.fields['username'].label = "Correo electrónico"
+
+class PasswordResetRequestForm(forms.Form):
+    email = forms.EmailField(max_length=254)

@@ -73,7 +73,7 @@ document.addEventListener('DOMContentLoaded', function () {
               contentHtml += `
               <div class="mensaje">
               <div class="row">
-                <p class="usuario"><img src="${userLogoUrl}" alt="logoMaude" width="30" height="30">Tú:</p>
+                <p class="usuario"><img src="${userLogoUrl}" alt="logoMaude" width="20" height="20">Tú:</p>
               </div>
               <div class="row">
                 <p>${mensaje.comando}</p>
@@ -82,7 +82,7 @@ document.addEventListener('DOMContentLoaded', function () {
             
             <div class="respuesta">
               <div class="row">
-                  <p class="maude"><img src="${maudeLogoUrl}" alt="logoMaude" width="30" height="30">Maude:</p>
+                  <p class="maude"><img src="${maudeLogoUrl}" alt="logoMaude" width="20" height="20">Maude:</p>
               </div>
               <div class="row">
                 <p>${mensaje.respuesta}</p>

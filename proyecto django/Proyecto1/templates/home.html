@@ -44,9 +44,10 @@
         <h4>Chats</h4>
         <div class="list-group">
           {% for chat in chats %}
-          <a href="#" class="list-group-item list-group-item-action chat-link" data-chat-id="{{ chat.id }}">
-            {{ chat.nombre }}
-          </a>
+              <a href="#" class="list-group-item list-group-item-action chat-link" data-chat-id="{{ chat.id }}">
+                {{ chat.nombre }}
+              </a>
+          
           {% endfor %}
         </div>
         <a href="{% url 'new_chat' %}" class="btn btn-primary mt-3">Crear nuevo chat</a>
@@ -128,7 +129,7 @@
   </div>
 </div>
 
-<!-- Elemento de ejemplo para almacenar la URL estática, no se muestra realmente al usuario -->
+
 <div id="staticUrlsMaude" data-maude-logo-url="{% static 'maude_logo.jpg' %}" style="display:none;"></div>
 <div id="staticUrlsUser" data-user-logo-url="{% static 'user_default.jpg' %}" style="display:none;"></div>
 
