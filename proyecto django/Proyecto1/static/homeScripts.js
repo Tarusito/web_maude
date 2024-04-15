@@ -163,3 +163,56 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
   });
+
+  // Selecciona el botón y asigna el evento click
+const deleteChatsButton = document.getElementById('deleteChatsButton');
+
+if(deleteChatsButton) {
+  deleteChatsButton.addEventListener('click', deleteChats);
+}
+deleteChatsButton.addEventListener('click', function () {
+  // Selecciona los checkboxes marcados
+  const selectedCheckboxes = document.querySelectorAll('.chat-checkbox:checked');
+  // Obtiene los IDs de los chats a eliminar
+  const chatIds = Array.from(selectedCheckboxes).map(cb => cb.value);
+
+  // Asegúrate de que al menos un chat ha sido seleccionado
+  if (chatIds.length === 0) {
+    alert('Selecciona al menos un chat para eliminar.');
+    return;
+  }
+
+  // Confirma con el usuario
+  if (!confirm('¿Estás seguro de que quieres eliminar los chats seleccionados?')) {
+    return;
+  }
+
+  // CSRF token necesario para la petición POST
+  const csrfToken = document.querySelector('input[name="csrfmiddlewaretoken"]').value;
+
+  // Datos a enviar
+  const formData = new FormData();
+  formData.append('chat_ids', JSON.stringify(chatIds));
+
+  // Ejecuta la petición fetch para enviar los datos al servidor
+  fetch('/ruta-para-eliminar-chats/', { // Sustituye con la ruta correcta
+    method: 'POST',
+    body: formData,
+    headers: {
+      'X-CSRFToken': csrfToken,
+    },
+  })
+  .then(response => {
+    if (!response.ok) {
+      throw new Error('Error en la respuesta de la red');
+    }
+    return response.json();
+  })
+  .then(data => {
+    // Actualiza la UI aquí si es necesario
+    alert('Chats eliminados correctamente');
+  })
+  .catch(error => {
+    console.error('Error:', error);
+  });
+});

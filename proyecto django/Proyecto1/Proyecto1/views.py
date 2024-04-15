@@ -24,6 +24,7 @@ from django.utils.http import urlsafe_base64_encode
 from django.utils.encoding import force_bytes
 from .forms import PasswordResetRequestForm
 from django.contrib.auth import get_user_model
+from django.views.decorators.csrf import ensure_csrf_cookie
 
 #Cada funcion que hay aquí es una vista
 @login_required
@@ -72,6 +73,18 @@ def chat_view(request, chat_id):
 
     mensajes = Mensaje.objects.filter(chat=chat).order_by('-fecha_creacion')
     return render(request, 'chat.html', {'chat': chat, 'mensajes': mensajes})
+
+@login_required
+@ensure_csrf_cookie
+def delete_chats(request):
+    if request.method == 'POST':
+        # Asegúrate de parsear el JSON en el body de la solicitud
+        chat_ids = json.loads(request.POST.get('chat_ids'))
+        # Filtro para asegurarse de que solo se eliminan los chats del usuario
+        Chat.objects.filter(id__in=chat_ids, usuario=request.user).delete()
+        return JsonResponse({'message': 'Chats eliminados correctamente'}, status=200)
+    else:
+        return JsonResponse({'error': 'Método no permitido'}, status=405)
 
 @login_required
 def get_chat_content(request, chat_id):
