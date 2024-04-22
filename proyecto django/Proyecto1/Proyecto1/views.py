@@ -1,3 +1,4 @@
+import json
 import re
 from django.core.mail import send_mail
 from django.conf import settings
@@ -25,6 +26,7 @@ from django.utils.encoding import force_bytes
 from .forms import PasswordResetRequestForm
 from django.contrib.auth import get_user_model
 from django.views.decorators.csrf import ensure_csrf_cookie
+from django.views.decorators.csrf import csrf_protect
 
 #Cada funcion que hay aquí es una vista
 @login_required
@@ -105,13 +107,15 @@ def get_chat_content(request, chat_id):
     return JsonResponse(chat_data)
 
 @login_required
+@csrf_protect
 def new_chat(request):
-    if request.method == "POST":
-        nombre = request.POST.get("nombre_chat")
-        Chat.objects.create(nombre=nombre, usuario=request.user)
-        return redirect('home')
-    
-    return render(request, 'new_chat.html')
+        data = json.loads(request.body)
+        chat_name = data.get('nombre')
+        Chat.objects.create(nombre=chat_name, usuario=request.user)
+        # Devuelve todos los chats
+        chats = Chat.objects.filter(usuario=request.user)
+        chats_data = [{'id': chat.id, 'nombre': chat.nombre} for chat in chats]
+        return JsonResponse({'status': 'success', 'chats': chats_data})
 
 @login_required
 def saveModule(request, chat_id):

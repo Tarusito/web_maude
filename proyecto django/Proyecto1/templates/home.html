@@ -57,7 +57,7 @@
 
         </div>
         <button type="button" class="btn btn-danger mt-3" id="deleteChatsButton">Eliminar seleccionados</button>
-        <a href="{% url 'new_chat' %}" class="btn btn-primary mt-3">Crear nuevo chat</a>
+        <button type="button" class="btn btn-primary mt-3" data-bs-toggle="modal" data-bs-target="#newChatModal">Crear nuevo chat</button>
       </div>
       <!-- Columna central, se mostrará solo si hay un chat seleccionado -->
       <div class="col-md-8">
@@ -136,6 +136,26 @@
   </div>
 </div>
 
+<!-- Modal Nuevo Chat -->
+<div class="modal fade" id="newChatModal" tabindex="-1" aria-labelledby="newChatModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="newChatModalLabel">Nuevo Chat</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form id="newChatForm">
+          <div class="mb-3">
+            <label for="chatName" class="form-label">Nombre del Chat</label>
+            <input type="text" class="form-control" id="chatName" required>
+          </div>
+          <button type="submit" class="btn btn-primary">Crear Chat</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
 
 <div id="staticUrlsMaude" data-maude-logo-url="{% static 'maude_logo.jpg' %}" style="display:none;"></div>
 <div id="staticUrlsUser" data-user-logo-url="{% static 'user_default.jpg' %}" style="display:none;"></div>
