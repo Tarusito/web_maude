@@ -1,19 +1,24 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Register</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL"
+        crossorigin="anonymous"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
 
 </head>
 <style>
-    body{
+    body {
         background-color: #FFDE9C;
     }
 </style>
+
 <body>
 
     {% block content %}
@@ -29,18 +34,22 @@
                     </div>
                     <div class="form-group mt-2">
                         <label for="id_correo_ucm">Correo UCM</label>
-                        <input type="email" class="form-control" id="id_correo_ucm" name="correo_ucm" placeholder="nombre@ucm.es">
+                        <input type="email" class="form-control" id="id_correo_ucm" name="correo_ucm"
+                            placeholder="nombre@ucm.es">
                     </div>
                     <div class="form-group mt-2">
                         <label for="id_contraseña">Contraseña</label>
-                        <input type="password" class="form-control" id="id_contraseña" name="contraseña" placeholder="Contraseña">
+                        <input type="password" class="form-control" id="id_contraseña" name="contraseña"
+                            placeholder="Contraseña">
                         <small id="passwordHelpBlock" class="form-text text-muted">
-                            La contraseña debe tener al menos 8 caracteres, incluir una letra mayúscula, una minúscula y un número.
+                            La contraseña debe tener al menos 8 caracteres, incluir una letra mayúscula, una minúscula y
+                            un número.
                         </small>
                     </div>
                     <div class="form-group mt-2">
                         <label for="id_confirmar_contraseña">Confirmar contraseña</label>
-                        <input type="password" class="form-control" id="id_confirmar_contraseña" name="confirmar_contraseña" placeholder="Confirmar contraseña">
+                        <input type="password" class="form-control" id="id_confirmar_contraseña"
+                            name="confirmar_contraseña" placeholder="Confirmar contraseña">
                     </div>
                     <button type="submit" class="btn btn-primary mt-3">Registrar</button>
                 </form>
@@ -52,10 +61,28 @@
             </div>
         </div>
     </div>
+
+    <div class="modal fade" id="verificationModal" tabindex="-1" aria-labelledby="verificationModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="verificationModalLabel">Verificación de Correo</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    Por favor, revisa tu correo electrónico y verifica tu cuenta accediendo al enlace que te hemos enviado.
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Entendido</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
-        $(document).ready(function() {
+        $(document).ready(function () {
             // Validación del correo UCM
-            $("#id_correo_ucm").on("input", function() {
+            $("#id_correo_ucm").on("input", function () {
                 var email = $(this).val();
                 if (email.length > 0 && !email.endsWith("@ucm.es")) {
                     $(this).addClass("is-invalid");
@@ -63,40 +90,60 @@
                     $(this).removeClass("is-invalid");
                 }
             });
-        
+
             // Validación de la contraseña
-            $("#id_contraseña, #id_confirmar_contraseña").on("input", function() {
-        var password = $("#id_contraseña").val();
-        var confirmPassword = $("#id_confirmar_contraseña").val();
-        var validLength = password.length >= 8;
-        var hasUpperCase = /[A-Z]/.test(password);
-        var hasLowerCase = /[a-z]/.test(password);
-        var hasNumber = /\d/.test(password);
-        var validPassword = validLength && hasUpperCase && hasLowerCase && hasNumber;
+            $("#id_contraseña, #id_confirmar_contraseña").on("input", function () {
+                var password = $("#id_contraseña").val();
+                var confirmPassword = $("#id_confirmar_contraseña").val();
+                var validLength = password.length >= 8;
+                var hasUpperCase = /[A-Z]/.test(password);
+                var hasLowerCase = /[a-z]/.test(password);
+                var hasNumber = /\d/.test(password);
+                var validPassword = validLength && hasUpperCase && hasLowerCase && hasNumber;
 
-        // Actualizar visualización de los requisitos
-        $("#passwordHelpBlock").html(
-            "La contraseña debe:<br>" + 
-            (validLength ? "<span class='text-success'>Tener al menos 8 caracteres.</span>" : "<span class='text-danger'>Tener al menos 8 caracteres.</span>") +
-            (hasUpperCase ? "<span class='text-success'> Incluir una letra mayúscula.</span>" : "<span class='text-danger'> Incluir una letra mayúscula.</span>") +
-            (hasLowerCase ? "<span class='text-success'> Incluir una letra minúscula.</span>" : "<span class='text-danger'> Incluir una letra minúscula.</span>") +
-            (hasNumber ? "<span class='text-success'> Incluir un número.</span>" : "<span class='text-danger'> Incluir un número.</span>")
-        );
+                // Actualizar visualización de los requisitos
+                $("#passwordHelpBlock").html(
+                    "La contraseña debe:<br>" +
+                    (validLength ? "<span class='text-success'>Tener al menos 8 caracteres.</span>" : "<span class='text-danger'>Tener al menos 8 caracteres.</span>") +
+                    (hasUpperCase ? "<span class='text-success'> Incluir una letra mayúscula.</span>" : "<span class='text-danger'> Incluir una letra mayúscula.</span>") +
+                    (hasLowerCase ? "<span class='text-success'> Incluir una letra minúscula.</span>" : "<span class='text-danger'> Incluir una letra minúscula.</span>") +
+                    (hasNumber ? "<span class='text-success'> Incluir un número.</span>" : "<span class='text-danger'> Incluir un número.</span>")
+                );
 
-        if (!validPassword) {
-            $("#id_contraseña").addClass("is-invalid");
-        } else {
-            $("#id_contraseña").removeClass("is-invalid");
-        }
-        if (password !== confirmPassword) {
-            $("#id_confirmar_contraseña").addClass("is-invalid");
-        } else {
-            $("#id_confirmar_contraseña").removeClass("is-invalid");
-        }
-    });
+                if (!validPassword) {
+                    $("#id_contraseña").addClass("is-invalid");
+                } else {
+                    $("#id_contraseña").removeClass("is-invalid");
+                }
+                if (password !== confirmPassword) {
+                    $("#id_confirmar_contraseña").addClass("is-invalid");
+                } else {
+                    $("#id_confirmar_contraseña").removeClass("is-invalid");
+                }
+            });
         });
-        </script>
+
+
+        $(document).ready(function () {
+            var form = $('form'); // Selecciona el formulario
+            form.submit(function (event) {
+                event.preventDefault(); // Previene el envío inmediato
+
+                // Mostrar el modal
+                $('#verificationModal').modal('show');
+
+                // Esperar 5 segundos, luego enviar el formulario automáticamente
+                setTimeout(function () {
+                    form.off('submit'); // Remueve el manejador de evento para evitar un bucle infinito
+                    form.submit(); // Envía el formulario
+                }, 5000); // Cambia el tiempo según lo necesites
+            });
+        });
+
+
+    </script>
     {% endblock %}
 
 </body>
+
 </html>
