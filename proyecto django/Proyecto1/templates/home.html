@@ -44,9 +44,9 @@
         <h4>Chats</h4>
         <div class="list-group">
           {% for chat in chats %}
-          <div class="d-flex align-items-center list-group-item list-group-item-action">
-            <a href="#" class="list-group-item-action chat-link flex-grow-1"
-              data-chat-id="{{ chat.id }}">
+          <div class="d-flex align-items-center list-group-item list-group-item-action" aria-selected="false">
+            <a href="#" class="list-group-item-action flex-grow-1 chat-link"
+              data-chat-id="{{ chat.id }}" >
               {{ chat.nombre }}
             </a>
             <input class="form-check-input chat-checkbox me-1" type="checkbox" value="{{ chat.id }}"

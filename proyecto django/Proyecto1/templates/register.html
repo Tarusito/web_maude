@@ -34,6 +34,9 @@
                     <div class="form-group mt-2">
                         <label for="id_contraseña">Contraseña</label>
                         <input type="password" class="form-control" id="id_contraseña" name="contraseña" placeholder="Contraseña">
+                        <small id="passwordHelpBlock" class="form-text text-muted">
+                            La contraseña debe tener al menos 8 caracteres, incluir una letra mayúscula, una minúscula y un número.
+                        </small>
                     </div>
                     <div class="form-group mt-2">
                         <label for="id_confirmar_contraseña">Confirmar contraseña</label>
@@ -63,20 +66,34 @@
         
             // Validación de la contraseña
             $("#id_contraseña, #id_confirmar_contraseña").on("input", function() {
-                var password = $("#id_contraseña").val();
-                var confirmPassword = $("#id_confirmar_contraseña").val();
-                var validPassword = password.length >= 8 && /[A-Z]/.test(password) && /[a-z]/.test(password) && /\d/.test(password);
-                if (!validPassword) {
-                    $("#id_contraseña").addClass("is-invalid");
-                } else {
-                    $("#id_contraseña").removeClass("is-invalid");
-                }
-                if (password !== confirmPassword) {
-                    $("#id_confirmar_contraseña").addClass("is-invalid");
-                } else {
-                    $("#id_confirmar_contraseña").removeClass("is-invalid");
-                }
-            });
+        var password = $("#id_contraseña").val();
+        var confirmPassword = $("#id_confirmar_contraseña").val();
+        var validLength = password.length >= 8;
+        var hasUpperCase = /[A-Z]/.test(password);
+        var hasLowerCase = /[a-z]/.test(password);
+        var hasNumber = /\d/.test(password);
+        var validPassword = validLength && hasUpperCase && hasLowerCase && hasNumber;
+
+        // Actualizar visualización de los requisitos
+        $("#passwordHelpBlock").html(
+            "La contraseña debe:<br>" + 
+            (validLength ? "<span class='text-success'>Tener al menos 8 caracteres.</span>" : "<span class='text-danger'>Tener al menos 8 caracteres.</span>") +
+            (hasUpperCase ? "<span class='text-success'> Incluir una letra mayúscula.</span>" : "<span class='text-danger'> Incluir una letra mayúscula.</span>") +
+            (hasLowerCase ? "<span class='text-success'> Incluir una letra minúscula.</span>" : "<span class='text-danger'> Incluir una letra minúscula.</span>") +
+            (hasNumber ? "<span class='text-success'> Incluir un número.</span>" : "<span class='text-danger'> Incluir un número.</span>")
+        );
+
+        if (!validPassword) {
+            $("#id_contraseña").addClass("is-invalid");
+        } else {
+            $("#id_contraseña").removeClass("is-invalid");
+        }
+        if (password !== confirmPassword) {
+            $("#id_confirmar_contraseña").addClass("is-invalid");
+        } else {
+            $("#id_confirmar_contraseña").removeClass("is-invalid");
+        }
+    });
         });
         </script>
     {% endblock %}

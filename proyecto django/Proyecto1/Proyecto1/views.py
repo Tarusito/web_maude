@@ -2,7 +2,7 @@ import json
 import re
 from django.core.mail import send_mail
 from django.conf import settings
-from django.http import JsonResponse
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_http_methods
 from .forms import PasswordResetRequestForm, RegistrationForm, UserLoginForm
@@ -27,6 +27,11 @@ from .forms import PasswordResetRequestForm
 from django.contrib.auth import get_user_model
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.views.decorators.csrf import csrf_protect
+from django.utils.http import urlsafe_base64_decode
+from django.http import HttpResponse
+from django.shortcuts import redirect
+from django.contrib.auth.tokens import default_token_generator
+from django.contrib.auth import get_user_model
 
 #Cada funcion que hay aquí es una vista
 @login_required
@@ -132,17 +137,43 @@ def logout_request(request):
     # Puedes añadir aquí cualquier lógica adicional que necesites.
     return redirect('login')
 
-def verificar_email(request, codigo):
-    user = Usuario.objects.get(codigo_verificacion=codigo)
-    user.email_verificado = True
-    user.save()
-    return redirect('login')
+def verify_email(request, uidb64, token):
+    try:
+        # Decodificar el UID desde base64
+        uid = urlsafe_base64_decode(uidb64).decode('utf-8')
+        user = get_user_model().objects.get(pk=uid)
+    except (TypeError, ValueError, OverflowError, get_user_model().DoesNotExist) as e:
+        return HttpResponse(f'Error decodificando UID: {str(e)}')  # Para depuración
 
-def enviar_email_verificacion(user):
+    # Verificar que el usuario exista y el token sea válido
+    if user is not None and default_token_generator.check_token(user, token):
+        # Marcar el correo electrónico como verificado
+        user.email_verificado = True
+        user.save()
+        
+        # Redirigir a una página de confirmación o a la página de inicio de sesión
+        return redirect('login')
+    else:
+        return HttpResponse('Enlace de verificación inválido o caducado.')
+
+def enviar_email_verificacion(request, user):
+    # Codificar el ID del usuario
+    uid = urlsafe_base64_encode(force_bytes(user.pk))
+    # Crear un token seguro
+    token = default_token_generator.make_token(user)
+
+    # Construir el enlace de verificación de correo electrónico
+    link = request.build_absolute_uri(
+        reverse('email_verify', kwargs={'uidb64': uid, 'token': token})
+    )
+
+    # Mensaje de correo
     subject = 'Verifica tu correo electrónico'
-    message = f'Usa este enlace para verificar tu cuenta: http://127.0.0.1:8000/verificar/{user.codigo_verificacion}'
+    message = f'Por favor, usa este enlace para verificar tu cuenta: {link}'
     email_from = settings.EMAIL_HOST_USER
-    recipient_list = [user.email,]
+    recipient_list = [user.email]
+
+    # Enviar el correo
     send_mail(subject, message, email_from, recipient_list)
 
 def login(request):
@@ -174,7 +205,7 @@ def register(request):
             )
             user.set_password(form.cleaned_data['contraseña'])
             user.save()
-            enviar_email_verificacion(user)
+            enviar_email_verificacion(request, user)
             return redirect('login')  # Redireccionar a la página que desees después del registro
     else:
         form = RegistrationForm()
