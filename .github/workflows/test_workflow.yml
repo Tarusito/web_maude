@@ -28,8 +28,10 @@ jobs:
 
       - name: Run migrations
         run: |
-          cd /proyecto-django/Proyecto1/
+          cd "proyecto django/Proyecto1"
+          python manage.py migrate
 
       - name: Run tests
         run: |
-          python /proyecto django/Proyecto1/manage.py test
+          cd "proyecto django/Proyecto1"
+          python manage.py test
