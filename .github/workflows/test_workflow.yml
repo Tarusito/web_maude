@@ -27,7 +27,9 @@ jobs:
         pip install django-widget-tweaks
 
     - name: Run migrations
-      run: python manage.py migrate  # Ejecuta las migraciones de la base de datos
+      run: cd /proyecto django/Proyecto1/
+           python manage.py migrate
 
     - name: Run tests
-      run: python manage.py test  # Ejecuta las pruebas
+      run: cd /proyecto django/Proyecto1/
+           python manage.py test

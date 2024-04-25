@@ -340,21 +340,25 @@ def run_maude_command(request, chat_id):
                 # Realizar la búsqueda
                 for sol, subs, path, nrew in itertools.islice(ini.search(flecha, fin, conditions, None, m or -1), n or 1):
                     solucion = str(subs)
-                    soluciones += f"{solucion}<br>"  # Usando <br> para HTML, reemplazar por '\n' si es para texto
+                    soluciones += f"{solucion}<br>"  
 
             return soluciones if soluciones else "No hay soluciones"        
             
-
-        if comando in ["reduce", "red"]:
-            resultado = reduce()
-        elif comando in ["rew", "rewrite"]:
-            resultado = rewrite()
-        elif comando in ["search"]:
-            resultado = search()
-        elif comando in ["frewrite", "frew"]:
-            resultado = frewrite()
-        # Añadir más condiciones según sea necesario
-
+        try:
+            if comando in ["reduce", "red"]:
+                resultado = reduce()
+            elif comando in ["rew", "rewrite"]:
+                resultado = rewrite()
+            elif comando in ["search"]:
+                resultado = search()
+            elif comando in ["frewrite", "frew"]:
+                resultado = frewrite()
+            else:
+                resultado = "[Error]: Comando no reconocido"
+            # Añadir más condiciones según sea necesario
+        except Exception as e:
+            resultado = f"[Error]: {e}"
+            
         response = str(resultado)
         chat.modulo = user_code
         chat.save()
