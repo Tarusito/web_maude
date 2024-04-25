@@ -28,7 +28,7 @@ jobs:
 
       - name: Run migrations
         run: |
-          cd /proyecto_django/Proyecto1/
+          cd /proyecto-django/Proyecto1/
 
       - name: Run tests
         run: |
