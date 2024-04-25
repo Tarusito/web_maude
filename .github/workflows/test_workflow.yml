@@ -28,7 +28,7 @@ jobs:
 
       - name: Run migrations
         run: |
-          python /proyecto django/Proyecto1/manage.py migrate
+          cd /proyecto django/Proyecto1/
 
       - name: Run tests
         run: |
