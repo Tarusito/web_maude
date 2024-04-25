@@ -1,11 +1,12 @@
 import json
+from pyexpat.errors import messages
 import re
 from django.core.mail import send_mail
 from django.conf import settings
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_http_methods
-from .forms import PasswordResetRequestForm, RegistrationForm, UserLoginForm
+from .forms import PasswordResetRequestForm, RegistrationForm, SetPasswordForm, UserLoginForm
 from django.contrib.auth import login as auth_login
 from .forms import RegistrationForm
 from django.contrib.auth import authenticate, logout
@@ -43,32 +44,50 @@ def home(request, chat_id=None):
     chats = Chat.objects.filter(usuario=request.user).order_by('-id')
     return render(request, 'home.html', {'chats': chats})
 
+# Mejoras en la vista para asegurar retroalimentación adecuada y redirección
 def password_reset_request(request):
     if request.method == "POST":
         form = PasswordResetRequestForm(request.POST)
         if form.is_valid():
             email = form.cleaned_data["email"]
-            Usuario = get_user_model()
-            associated_users = Usuario.objects.filter(email=email)
-            if associated_users.exists():
-                for user in associated_users:
-                    # Crear el token y el uid
+            users = get_user_model().objects.filter(email=email)
+            if users.exists():
+                for user in users:
                     uid = urlsafe_base64_encode(force_bytes(user.pk))
                     token = default_token_generator.make_token(user)
-                    # Construir el enlace de restablecimiento de contraseña
                     link = request.build_absolute_uri(reverse('password_reset_confirm', kwargs={'uidb64': uid, 'token': token}))
-                    # Construir el mensaje de correo
                     subject = 'Restablecimiento de contraseña'
-                    message = f'Por favor, haz clic en el siguiente enlace para restablecer tu contraseña: {link}'
+                    message = f'Haz clic en el enlace para restablecer tu contraseña: {link}'
                     email_from = settings.EMAIL_HOST_USER
-                    recipient_list = [user.email]
-                    # Enviar el correo
-                    send_mail(subject, message, email_from, recipient_list)
-                # Podrías redirigir a una página de éxito o renderizar un mensaje en este punto
-                return redirect('password_reset_done')
+                    send_mail(subject, message, email_from, [user.email])
+                return HttpResponse('Te hemos enviado un correo para restablecer tu contraseña.')
+            else:
+                form.add_error('email', 'No hay usuarios registrados con ese correo.')
     else:
         form = PasswordResetRequestForm()
-    return render(request, "registration/password_reset_form.html", {"form": form})
+    return render(request, "password_reset_form.html", {"form": form})
+
+def password_reset_confirm(request, uidb64, token):
+    try:
+        uid = urlsafe_base64_decode(uidb64).decode()
+        user = get_user_model().objects.get(pk=uid)
+    except (ValueError, OverflowError, get_user_model().DoesNotExist):
+        return HttpResponse('Enlace inválido o caducado')
+
+    if user is not None and default_token_generator.check_token(user, token):
+        if request.method == 'POST':
+            form = SetPasswordForm(request.POST)
+            if form.is_valid():
+                new_password = form.cleaned_data['new_password']
+                user.set_password(new_password)
+                user.save()
+                return redirect('login')  # Asegúrate de redirigir a una página de confirmación o login
+        else:
+            form = SetPasswordForm()
+        return render(request, 'password_reset_confirm.html', {'form': form, 'uidb64': uidb64, 'token': token})
+    else:
+        return HttpResponse('Enlace inválido o caducado')
+
 
 def chat_view(request, chat_id):
     chat = Chat.objects.get(id=chat_id)
@@ -229,7 +248,6 @@ def run_maude_command(request, chat_id):
         comando = operacion[0]
 
         def reduce():
-            
             term = module.parseTerm(resto)
             term.reduce()
 

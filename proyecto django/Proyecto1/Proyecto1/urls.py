@@ -35,10 +35,8 @@ urlpatterns = [
     path('saveModule/<int:chat_id>/', views.saveModule, name='saveModule'),
     path('password_reset/', views.password_reset_request, name='password_reset_request'),
     path('password_recover/', views.password_reset_request, name='password_recover'),
-    path('password_reset_confirm/<uidb64>/<token>/', auth_views.PasswordResetConfirmView.as_view(), name='password_reset_confirm'),
+    path('password_reset_confirm/<uidb64>/<token>/', views.password_reset_confirm, name='password_reset_confirm'),
     path('password_reset_done/', auth_views.PasswordResetDoneView.as_view(), name='password_reset_done'),
-    path('password_reset_confirm/<uidb64>/<token>/', auth_views.PasswordResetConfirmView.as_view(), name='password_reset_confirm'),
-    path('password_reset_complete/', auth_views.PasswordResetCompleteView.as_view(template_name='registration/password_reset_complete.html'), name='password_reset_complete'),
     path('ruta-para-eliminar-chats/', views.delete_chats, name='delete_chats'),
 ]
 

@@ -114,12 +114,11 @@ document.addEventListener("DOMContentLoaded", function () {
     const activeChatLink = document.querySelector('.chat-link.active');
     const chatId = activeChatLink ? activeChatLink.getAttribute('data-chat-id') : '';
 
-    console.log("entro en el sendcomando");
-
     if (!chatId) {
-      console.error("No hay un chat activo seleccionado.");
-      return;
+        console.error("No hay un chat activo seleccionado.");
+        return;
     }
+
     var commandInput = document.getElementById('maudeCommand');
     const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
     var maudeCode = document.getElementById('maudeModuloModal').value;
@@ -128,38 +127,59 @@ document.addEventListener("DOMContentLoaded", function () {
     formData.append('maude_code', maudeCode);
     formData.append('maude_execution', commandInput.value);
 
-    fetch(`/run_maude_command/${chatId}/`, {
-      method: "POST",
-      body: formData,
-      headers: { "X-Requested-With": "XMLHttpRequest" },
-    })
-      .then(response => response.json())
-      .then(data => {
-        const historySection = document.querySelector('.chat-history');
-        if (historySection) {
-          historySection.innerHTML += `
-            <div class="mensaje">
-              <div class="row">
-                <p class="usuario"><img src="${userLogoUrl}" alt="logoMaude" width="20" height="20">Tú:</p>
-              </div>
-              <div class="row">
-                <p>${data.comando}</p>
-              </div>
-            </div>
-            
-            <div class="respuesta">
-              <div class="row">
-                  <p class="maude"><img src="${maudeLogoUrl}" alt="logoMaude" width="20" height="20">Maude:</p>
-              </div>
-              <div class="row">
-                <p>${data.respuesta}</p>
-              </div>
-            </div>`;
-          commandInput.value = '';
-        }
-      })
-      .catch(error => console.error('Error:', error));
-  }
+    const fetchPromise = fetch(`/run_maude_command/${chatId}/`, {
+        method: "POST",
+        body: formData,
+        headers: { "X-Requested-With": "XMLHttpRequest" }
+    }).then(response => response.json());
+
+    const timeoutPromise = new Promise((resolve, reject) => {
+        setTimeout(() => reject(new Error('Timeout: la operación ha tardado demasiado y se ha cancelado')), 10000);
+    });
+
+    Promise.race([fetchPromise, timeoutPromise])
+        .then(data => {
+            const historySection = document.querySelector('.chat-history');
+            if (historySection) {
+                historySection.innerHTML += `
+                <div class="mensaje">
+                    <div class="row">
+                        <p class="usuario"><img src="${userLogoUrl}" alt="logoMaude" width="20" height="20">Tú:</p>
+                    </div>
+                    <div class="row">
+                        <p>${data.comando}</p>
+                    </div>
+                </div>
+                
+                <div class="respuesta">
+                    <div class="row">
+                        <p class="maude"><img src="${maudeLogoUrl}" alt="logoMaude" width="20" height="20">Maude:</p>
+                    </div>
+                    <div class="row">
+                        <p>${data.respuesta}</p>
+                    </div>
+                </div>`;
+                commandInput.value = '';
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            // Aquí puedes mostrar un mensaje de error en la interfaz de usuario
+            const historySection = document.querySelector('.chat-history');
+            if (historySection) {
+                historySection.innerHTML += `
+                <div class="respuesta">
+                    <div class="row">
+                        <p class="maude"><img src="${maudeLogoUrl}" alt="logoMaude" width="20" height="20">Maude:</p>
+                    </div>
+                    <div class="row">
+                        <p>Error en el módulo: ${error.message}</p>
+                    </div>
+                </div>`;
+            }
+        });
+}
+
 
   // Asigna el controlador sendMaudeCommand al botón de enviar en el formulario actualizado del chat
   document.addEventListener('click', function (event) {

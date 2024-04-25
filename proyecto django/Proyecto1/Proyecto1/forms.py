@@ -44,3 +44,15 @@ class UserLoginForm(AuthenticationForm):
 
 class PasswordResetRequestForm(forms.Form):
     email = forms.EmailField(max_length=254)
+
+class SetPasswordForm(forms.Form):
+    new_password = forms.CharField(label='Nueva contraseña', widget=forms.PasswordInput())
+    confirm_password = forms.CharField(label='Confirmar nueva contraseña', widget=forms.PasswordInput())
+
+    def clean(self):
+        cleaned_data = super().clean()
+        new_password = cleaned_data.get('new_password')
+        confirm_password = cleaned_data.get('confirm_password')
+        if new_password != confirm_password:
+            raise ValidationError("Las contraseñas no coinciden.")
+        return cleaned_data
