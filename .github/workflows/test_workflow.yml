@@ -25,6 +25,7 @@ jobs:
           python -m pip install --upgrade pip  # Asegura que pip está actualizado
           pip install maude
           pip install django-widget-tweaks
+          pip install django
 
       - name: Run migrations
         run: |
