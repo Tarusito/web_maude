@@ -33,5 +33,4 @@ jobs:
 
       - name: Run tests
         run: |
-          cd /proyecto django/Proyecto1/
           python manage.py test
