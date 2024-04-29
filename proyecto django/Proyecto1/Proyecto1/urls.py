@@ -38,5 +38,6 @@ urlpatterns = [
     path('password_reset_confirm/<uidb64>/<token>/', views.password_reset_confirm, name='password_reset_confirm'),
     path('password_reset_done/', auth_views.PasswordResetDoneView.as_view(), name='password_reset_done'),
     path('ruta-para-eliminar-chats/', views.delete_chats, name='delete_chats'),
+    path('marketModulos/', views.marketModulos, name='market_modulos')
 ]
 

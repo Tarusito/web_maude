@@ -196,7 +196,26 @@ document.addEventListener("DOMContentLoaded", function () {
 
 });
 
+
 document.addEventListener("DOMContentLoaded", function () {
+  const checkboxes = document.querySelectorAll('.chat-checkbox');
+  const deleteButton = document.getElementById('deleteChatsButton');
+
+  function updateDeleteButtonVisibility() {
+    const anyChecked = Array.from(checkboxes).some(cb => cb.checked);
+    if (anyChecked) {
+      deleteButton.classList.remove('hidden'); // Muestra el botón utilizando la clase de Bootstrap // Asegúrate de usar d-block o d-inline-block según sea necesario
+    } else {
+      deleteButton.classList.add('hidden'); // Oculta el botón utilizando la clase de Bootstrap
+    }
+  }
+
+  checkboxes.forEach(checkbox => {
+    checkbox.addEventListener('change', updateDeleteButtonVisibility);
+  });
+
+  // Inicializa la visibilidad del botón basada en el estado inicial de los checkboxes
+  updateDeleteButtonVisibility();
   function deleteChats() {
     // Selecciona los checkboxes marcados
     const selectedCheckboxes = document.querySelectorAll('.chat-checkbox:checked');

@@ -71,3 +71,15 @@ class Mensaje(models.Model):
     comando = models.TextField()
     respuesta = models.TextField()
     fecha_creacion = models.DateTimeField(auto_now_add=True)
+    
+class Modulo(models.Model):
+    nombre = models.CharField(max_length=255, unique=True, verbose_name="Nombre del Módulo")
+    descripcion = models.TextField(verbose_name="Descripción")
+    codigo_maude = models.TextField(verbose_name="Código Maude")
+    imagen = models.ImageField(upload_to="modulos_maude", verbose_name="Imagen del Módulo", blank=True, null=True)
+    creador = models.ForeignKey(get_user_model(), on_delete=models.CASCADE, related_name="modulos_creados", verbose_name="Usuario Creador")
+    activo = models.BooleanField(default=False, verbose_name="Activo para No Administradores")
+
+    def __str__(self):
+        return f"{self.nombre} - Creado por {self.creador.email}"
+    

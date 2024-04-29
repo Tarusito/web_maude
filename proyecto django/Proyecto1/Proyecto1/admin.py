@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
-from .models import Chat, Mensaje, Usuario
+from .models import Chat, Mensaje, Usuario, Modulo
 
 class UsuarioAdmin(BaseUserAdmin):
     model = Usuario
@@ -38,3 +38,10 @@ admin.site.register(Mensaje, MensajeAdmin)
 
 
 admin.site.register(Usuario, UsuarioAdmin)
+
+
+class ModuloAdmin(admin.ModelAdmin):
+    list_display = ('nombre', 'descripcion', 'codigo_maude', 'creador', 'activo')
+    list_filter = ('activo',)
+
+admin.site.register(Modulo, ModuloAdmin)

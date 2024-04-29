@@ -11,7 +11,7 @@ from django.contrib.auth import login as auth_login
 from .forms import RegistrationForm
 from django.contrib.auth import authenticate, logout
 from django.contrib.auth.decorators import login_required
-from .models import Chat, Mensaje, Usuario
+from .models import Chat, Mensaje, Modulo, Usuario
 import maude
 import itertools
 from django.urls import reverse_lazy
@@ -87,7 +87,6 @@ def password_reset_confirm(request, uidb64, token):
         return render(request, 'password_reset_confirm.html', {'form': form, 'uidb64': uidb64, 'token': token})
     else:
         return HttpResponse('Enlace inválido o caducado')
-
 
 def chat_view(request, chat_id):
     chat = Chat.objects.get(id=chat_id)
@@ -230,6 +229,13 @@ def register(request):
         form = RegistrationForm()
 
     return render(request, 'register.html', {'form': form})
+
+@login_required
+def marketModulos(request):
+    modulos = Modulo.objects.all()
+    for modulo in modulos:
+        print(modulo.nombre)
+    return render(request, 'marketModulos.html', {'modulos': modulos})
 
 @require_http_methods(["POST"])
 def run_maude_command(request, chat_id):
