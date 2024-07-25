@@ -51,7 +51,12 @@
         <div class="row">
             <div class="col">
                 <div class="row">
-                    <h3>Market Modulos</h3>
+                    <div class="col-10">
+                        <h3>Market Modulos</h3>
+                    </div>
+                    <div class="col-2">
+                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#crearModuloModal">Crear módulo</button>
+                    </div>
                 </div>
                 <div class="row">
                     <div class="col-8">
@@ -92,7 +97,7 @@
             {% include 'modulos_list.html' %}
         </div>
 
-        <!-- Modal -->
+        <!-- Modal de Detalle -->
         <div class="modal fade" id="moduloModal" tabindex="-1" aria-labelledby="moduloModalLabel" aria-hidden="true">
             <div class="modal-dialog modal-xl">
                 <div class="modal-content">
@@ -132,124 +137,194 @@
                 </div>
             </div>
         </div>
+
+        <!-- Modal de Creación -->
+        <div class="modal fade" id="crearModuloModal" tabindex="-1" aria-labelledby="crearModuloModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="crearModuloModalLabel">Crear Módulo</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="crearModuloForm">
+                            <div class="mb-3">
+                                <label for="nombreModulo" class="form-label">Nombre del Módulo</label>
+                                <input type="text" class="form-control" id="nombreModulo" name="nombre" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="descripcionModulo" class="form-label">Descripción</label>
+                                <textarea class="form-control" id="descripcionModulo" name="descripcion" required></textarea>
+                            </div>
+                            <div class="mb-3">
+                                <label for="codigoModulo" class="form-label">Código Maude</label>
+                                <textarea class="form-control" id="codigoModulo" name="codigo_maude" required></textarea>
+                            </div>
+                            <div class="mb-3">
+                                <label for="imagenModulo" class="form-label">Imagen del Módulo</label>
+                                <input type="file" class="form-control" id="imagenModulo" name="imagen">
+                            </div>
+                            <button type="submit" class="btn btn-primary">Crear</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script>
-        function attachToggleHandlers() {
-            $('.toggle-btn').off('click').on('click', function() {
-                var button = $(this);
-                var moduloId = button.data('id');
+document.addEventListener("DOMContentLoaded", function () {
+    function attachToggleHandlers() {
+        $('.toggle-btn').off('click').on('click', function() {
+            var button = $(this);
+            var moduloNombre = button.data('nombre');
 
+            $.ajax({
+                url: '/toggle_modulo/' + moduloNombre + '/',
+                type: 'POST',
+                data: {
+                    'csrfmiddlewaretoken': '{{ csrf_token }}'
+                },
+                success: function(response) {
+                    if (response.success) {
+                        if (response.activo) {
+                            button.removeClass('btn-success').addClass('btn-warning');
+                            button.text('Desactivar');
+                        } else {
+                            button.removeClass('btn-warning').addClass('btn-success');
+                            button.text('Activar');
+                        }
+                    } else {
+                        alert('Error al actualizar el estado del módulo.');
+                    }
+                },
+                error: function() {
+                    alert('Error al actualizar el estado del módulo.');
+                }
+            });
+        });
+    }
+
+    function fetchModulos() {
+        var query = $('#search-input').val();
+        var order_by = $('#order-by').val();
+        var direction = $('#direction').val();
+        var status = $('#status').val();
+
+        $.ajax({
+            url: "{% url 'market_modulos' %}",
+            type: 'GET',
+            data: {
+                'q': query,
+                'order_by': order_by,
+                'direction': direction,
+                'status': status
+            },
+            success: function(data) {
+                $('#modulos-list').html(data);
+                attachToggleHandlers();
+            },
+            error: function() {
+                alert('Error al realizar la búsqueda.');
+            }
+        });
+    }
+
+    $(document).ready(function() {
+        attachToggleHandlers();
+
+        $('#search-input').on('input', fetchModulos);
+        $('#order-by, #direction, #status').on('change', fetchModulos);
+
+        var exampleModal = document.getElementById('moduloModal');
+        var guardarBtn = exampleModal.querySelector('.modal-body #guardarBtn');
+        var modalCodigo = exampleModal.querySelector('.modal-body #modalCodigo');
+
+        exampleModal.addEventListener('show.bs.modal', function (event) {
+            var button = event.relatedTarget;
+            var nombre = button.getAttribute('data-nombre');
+            var descripcion = button.getAttribute('data-descripcion');
+            var imagen = button.getAttribute('data-imagen');
+            var codigo = button.getAttribute('data-codigo');
+
+            var modalTitle = exampleModal.querySelector('.modal-title');
+            var modalBodyDescription = exampleModal.querySelector('.modal-body #modalDescription');
+            var modalBodyImage = exampleModal.querySelector('.modal-body #modalImage');
+
+            modalTitle.textContent = nombre;
+            modalBodyDescription.textContent = descripcion;
+            modalBodyImage.src = imagen;
+            modalCodigo.value = codigo;
+
+            var initialCodigo = codigo;
+
+            modalCodigo.removeEventListener('input', handleInputChange);
+            modalCodigo.addEventListener('input', handleInputChange);
+
+            function handleInputChange() {
+                if (modalCodigo.value !== initialCodigo) {
+                    guardarBtn.style.display = 'block';
+                } else {
+                    guardarBtn.style.display = 'none';
+                }
+            }
+
+            guardarBtn.removeEventListener('click', handleSaveClick);
+            guardarBtn.addEventListener('click', handleSaveClick);
+
+            function handleSaveClick() {
                 $.ajax({
-                    url: '/toggle_modulo/' + moduloId + '/',
+                    url: '/update_modulo/' + nombre + '/',
                     type: 'POST',
                     data: {
-                        'csrfmiddlewaretoken': '{{ csrf_token }}'
+                        'csrfmiddlewaretoken': '{{ csrf_token }}',
+                        'codigo_maude': modalCodigo.value
                     },
                     success: function(response) {
                         if (response.success) {
-                            if (response.activo) {
-                                button.removeClass('btn-success').addClass('btn-warning');
-                                button.text('Desactivar');
-                            } else {
-                                button.removeClass('btn-warning').addClass('btn-success');
-                                button.text('Activar');
-                            }
+                            alert('Código actualizado con éxito.');
+                            $('#moduloModal').modal('hide');
+                            fetchModulos(); // Recargar la lista de módulos
                         } else {
-                            alert('Error al actualizar el estado del módulo.');
+                            alert('Error al actualizar el código.');
                         }
                     },
                     error: function() {
-                        alert('Error al actualizar el estado del módulo.');
+                        alert('Error al actualizar el código.');
                     }
                 });
-            });
-        }
+            }
+        });
 
-        function fetchModulos() {
-            var query = $('#search-input').val();
-            var order_by = $('#order-by').val();
-            var direction = $('#direction').val();
-            var status = $('#status').val();
+        // Manejar la creación del módulo
+        $('#crearModuloForm').on('submit', function(event) {
+            event.preventDefault();
+            var formData = new FormData(this);
+            formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
 
             $.ajax({
-                url: "{% url 'market_modulos' %}",
-                type: 'GET',
-                data: {
-                    'q': query,
-                    'order_by': order_by,
-                    'direction': direction,
-                    'status': status
-                },
-                success: function(data) {
-                    $('#modulos-list').html(data);
-                    attachToggleHandlers();
+                url: '/create_modulo/',
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function(response) {
+                    if (response.success) {
+                        alert('Módulo creado con éxito.');
+                        $('#crearModuloModal').modal('hide');
+                        fetchModulos();
+                    } else {
+                        alert('Error al crear el módulo.');
+                    }
                 },
                 error: function() {
-                    alert('Error al realizar la búsqueda.');
+                    alert('Error al crear el módulo.');
                 }
             });
-        }
-
-        $(document).ready(function() {
-            attachToggleHandlers();
-
-            $('#search-input').on('input', fetchModulos);
-            $('#order-by, #direction, #status').on('change', fetchModulos);
-
-            var exampleModal = document.getElementById('moduloModal');
-            exampleModal.addEventListener('show.bs.modal', function (event) {
-                var button = event.relatedTarget;
-                var nombre = button.getAttribute('data-nombre');
-                var descripcion = button.getAttribute('data-descripcion');
-                var imagen = button.getAttribute('data-imagen');
-                var codigo = button.getAttribute('data-codigo');
-
-                var modalTitle = exampleModal.querySelector('.modal-title');
-                var modalBodyDescription = exampleModal.querySelector('.modal-body #modalDescription');
-                var modalBodyImage = exampleModal.querySelector('.modal-body #modalImage');
-                var modalCodigo = exampleModal.querySelector('.modal-body #modalCodigo');
-                var guardarBtn = exampleModal.querySelector('.modal-body #guardarBtn');
-
-                modalTitle.textContent = nombre;
-                modalBodyDescription.textContent = descripcion;
-                modalBodyImage.src = imagen;
-                modalCodigo.value = codigo;
-
-                var initialCodigo = codigo;
-
-                modalCodigo.addEventListener('input', function() {
-                    if (modalCodigo.value !== initialCodigo) {
-                        guardarBtn.style.display = 'block';
-                    } else {
-                        guardarBtn.style.display = 'none';
-                    }
-                });
-
-                guardarBtn.addEventListener('click', function() {
-                    $.ajax({
-                        url: '/update_modulo/' + button.getAttribute('data-id') + '/',
-                        type: 'POST',
-                        data: {
-                            'csrfmiddlewaretoken': '{{ csrf_token }}',
-                            'codigo': modalCodigo.value
-                        },
-                        success: function(response) {
-                            if (response.success) {
-                                alert('Código actualizado con éxito.');
-                                $('#moduloModal').modal('hide');
-                            } else {
-                                alert('Error al actualizar el código.');
-                            }
-                        },
-                        error: function() {
-                            alert('Error al actualizar el código.');
-                        }
-                    });
-                });
-
-            });
         });
+    });
+});
+
     </script>
 </body>
 

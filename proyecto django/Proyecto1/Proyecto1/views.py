@@ -232,6 +232,7 @@ def register(request):
 
     return render(request, 'register.html', {'form': form})
 
+
 @login_required
 def marketModulos(request):
     query = request.GET.get('q', '')
@@ -267,22 +268,45 @@ def marketModulos(request):
     return render(request, 'marketModulos.html', {'page_obj': page_obj, 'query': query, 'order_by': order_by, 'direction': direction, 'status': status})
 
 @login_required
-def toggle_modulo(request, modulo_id):
+def toggle_modulo(request, modulo_nombre):
     if request.method == 'POST':
-        modulo = get_object_or_404(Modulo, id=modulo_id)
+        modulo = get_object_or_404(Modulo, nombre=modulo_nombre)
         modulo.activo = not modulo.activo
         modulo.save()
         return JsonResponse({'success': True, 'activo': modulo.activo})
     return JsonResponse({'success': False}, status=400)
 
 @login_required
-def update_modulo(request, modulo_id):
+def update_modulo(request, modulo_nombre):
     if request.method == 'POST':
-        modulo = get_object_or_404(Modulo, id=modulo_id)
-        nuevo_codigo = request.POST.get('codigo', '')
-        modulo.codigo = nuevo_codigo
+        modulo = get_object_or_404(Modulo, nombre=modulo_nombre)
+        nuevo_codigo = request.POST.get('codigo_maude', '')
+        modulo.codigo_maude = nuevo_codigo
+        modulo.save()
+        return JsonResponse({'success': True, 'codigo_maude': modulo.codigo_maude})
+    return JsonResponse({'success': False}, status=400)
+
+@login_required
+def create_modulo(request):
+    if request.method == 'POST':
+        nombre = request.POST.get('nombre')
+        descripcion = request.POST.get('descripcion')
+        codigo_maude = request.POST.get('codigo_maude')
+        imagen = request.FILES.get('imagen')
+
+        if not nombre or not descripcion or not codigo_maude:
+            return JsonResponse({'success': False, 'error': 'Todos los campos son obligatorios.'})
+
+        modulo = Modulo(
+            nombre=nombre,
+            descripcion=descripcion,
+            codigo_maude=codigo_maude,
+            imagen=imagen,
+            creador=request.user
+        )
         modulo.save()
         return JsonResponse({'success': True})
+
     return JsonResponse({'success': False}, status=400)
 
 @require_http_methods(["POST"])

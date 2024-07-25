@@ -39,7 +39,8 @@ urlpatterns = [
     path('password_reset_done/', auth_views.PasswordResetDoneView.as_view(), name='password_reset_done'),
     path('ruta-para-eliminar-chats/', views.delete_chats, name='delete_chats'),
     path('marketModulos/', views.marketModulos, name='market_modulos'),
-    path('toggle_modulo/<int:modulo_id>/', views.toggle_modulo, name='toggle_modulo'),
-    path('update_modulo/<int:modulo_id>/', views.update_modulo, name='update_modulo'),
+    path('toggle_modulo/<str:modulo_nombre>/', views.toggle_modulo, name='toggle_modulo'),
+    path('update_modulo/<str:modulo_nombre>/', views.update_modulo, name='update_modulo'),
+    path('create_modulo/', views.create_modulo, name='create_modulo'),
 ]
 

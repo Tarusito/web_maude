@@ -12,14 +12,13 @@
                 <p class="card-text">{{ modulo.descripcion|slice:":200" }}{% if modulo.descripcion|length > 200 %}...{% endif %}</p>
                 <div class="d-grid gap-2 d-md-block">
                     <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#moduloModal"
-                        data-id="{{ modulo.id }}"
                         data-nombre="{{ modulo.nombre }}"
                         data-descripcion="{{ modulo.descripcion }}"
                         data-imagen="{{ modulo.imagen|default:'https://via.placeholder.com/100' }}"
-                        data-codigo="{{ modulo.codigo }}">
+                        data-codigo="{{ modulo.codigo_maude }}">
                         Más información
                     </button>
-                    <button type="button" class="btn {% if modulo.activo %}btn-warning{% else %}btn-success{% endif %} toggle-btn" data-id="{{ modulo.id }}">
+                    <button type="button" class="btn {% if modulo.activo %}btn-warning{% else %}btn-success{% endif %} toggle-btn" data-nombre="{{ modulo.nombre }}">
                         {% if modulo.activo %}Desactivar{% else %}Activar{% endif %}
                     </button>
                 </div>
