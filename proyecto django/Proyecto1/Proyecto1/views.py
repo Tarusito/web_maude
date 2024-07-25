@@ -275,6 +275,16 @@ def toggle_modulo(request, modulo_id):
         return JsonResponse({'success': True, 'activo': modulo.activo})
     return JsonResponse({'success': False}, status=400)
 
+@login_required
+def update_modulo(request, modulo_id):
+    if request.method == 'POST':
+        modulo = get_object_or_404(Modulo, id=modulo_id)
+        nuevo_codigo = request.POST.get('codigo', '')
+        modulo.codigo = nuevo_codigo
+        modulo.save()
+        return JsonResponse({'success': True})
+    return JsonResponse({'success': False}, status=400)
+
 @require_http_methods(["POST"])
 def run_maude_command(request, chat_id):
     print("Entrando a run_maude_command")

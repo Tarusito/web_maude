@@ -101,9 +101,33 @@
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
-                        <img id="modalImage" src="" alt="Imagen del Módulo" class="img-fluid mb-2">
+                        <div class="container">
+                            <div class="row">
+                                <div class="col">
+                                    <div class="row">
+                                        <img id="modalImage" src="" alt="Imagen del Módulo" class="img-fluid mb-2" style="width:80px; height: 80px;">
+                                    </div>
+                                    <div class="row">
+                                        <h6>Descripción</h6>
+                                        <p id="modalDescription"></p>
+                                    </div>
+                                </div>
+                                <div class="col">
+                                    <div class="row">
+                                        <h6>Código del módulo</h6>
+                                    </div>
+                                    <div class="row">
+                                        <textarea class="form-control" name="textoCodigo" id="modalCodigo" style="height: 500px"></textarea>                                       
+                                    </div>
+                                    <div class="row mt-3">
+                                        <button type="button" class="btn btn-primary" id="guardarBtn">Guardar</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
                         <h5 id="modalTitle"></h5>
-                        <p id="modalDescription"></p>
+                        
                     </div>
                 </div>
             </div>
@@ -172,6 +196,59 @@
 
             $('#search-input').on('input', fetchModulos);
             $('#order-by, #direction, #status').on('change', fetchModulos);
+
+            var exampleModal = document.getElementById('moduloModal');
+            exampleModal.addEventListener('show.bs.modal', function (event) {
+                var button = event.relatedTarget;
+                var nombre = button.getAttribute('data-nombre');
+                var descripcion = button.getAttribute('data-descripcion');
+                var imagen = button.getAttribute('data-imagen');
+                var codigo = button.getAttribute('data-codigo');
+
+                var modalTitle = exampleModal.querySelector('.modal-title');
+                var modalBodyDescription = exampleModal.querySelector('.modal-body #modalDescription');
+                var modalBodyImage = exampleModal.querySelector('.modal-body #modalImage');
+                var modalCodigo = exampleModal.querySelector('.modal-body #modalCodigo');
+                var guardarBtn = exampleModal.querySelector('.modal-body #guardarBtn');
+
+                modalTitle.textContent = nombre;
+                modalBodyDescription.textContent = descripcion;
+                modalBodyImage.src = imagen;
+                modalCodigo.value = codigo;
+
+                var initialCodigo = codigo;
+
+                modalCodigo.addEventListener('input', function() {
+                    if (modalCodigo.value !== initialCodigo) {
+                        guardarBtn.style.display = 'block';
+                    } else {
+                        guardarBtn.style.display = 'none';
+                    }
+                });
+
+                guardarBtn.addEventListener('click', function() {
+                    $.ajax({
+                        url: '/update_modulo/' + button.getAttribute('data-id') + '/',
+                        type: 'POST',
+                        data: {
+                            'csrfmiddlewaretoken': '{{ csrf_token }}',
+                            'codigo': modalCodigo.value
+                        },
+                        success: function(response) {
+                            if (response.success) {
+                                alert('Código actualizado con éxito.');
+                                $('#moduloModal').modal('hide');
+                            } else {
+                                alert('Error al actualizar el código.');
+                            }
+                        },
+                        error: function() {
+                            alert('Error al actualizar el código.');
+                        }
+                    });
+                });
+
+            });
         });
     </script>
 </body>

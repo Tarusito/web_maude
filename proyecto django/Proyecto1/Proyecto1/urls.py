@@ -40,5 +40,6 @@ urlpatterns = [
     path('ruta-para-eliminar-chats/', views.delete_chats, name='delete_chats'),
     path('marketModulos/', views.marketModulos, name='market_modulos'),
     path('toggle_modulo/<int:modulo_id>/', views.toggle_modulo, name='toggle_modulo'),
+    path('update_modulo/<int:modulo_id>/', views.update_modulo, name='update_modulo'),
 ]
 
