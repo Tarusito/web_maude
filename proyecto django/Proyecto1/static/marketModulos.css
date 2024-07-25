@@ -1,0 +1,16 @@
+.card {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.card-body {
+    flex-grow: 1;
+}
+
+.card-text {
+    height: 60px; /* Establece una altura fija para el párrafo */
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
