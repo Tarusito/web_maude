@@ -42,5 +42,5 @@ urlpatterns = [
     path('toggle_modulo/<str:modulo_nombre>/', views.toggle_modulo, name='toggle_modulo'),
     path('update_modulo/<str:modulo_nombre>/', views.update_modulo, name='update_modulo'),
     path('create_modulo/', views.create_modulo, name='create_modulo'),
-]
+] 
 

@@ -223,6 +223,7 @@ document.addEventListener("DOMContentLoaded", function () {
             success: function(data) {
                 $('#modulos-list').html(data);
                 attachToggleHandlers();
+                $('#search-input').val(query); // Mantener el valor de búsqueda
             },
             error: function() {
                 alert('Error al realizar la búsqueda.');
@@ -324,6 +325,7 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     });
 });
+
 
     </script>
 </body>

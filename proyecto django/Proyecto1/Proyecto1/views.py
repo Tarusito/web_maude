@@ -236,36 +236,40 @@ def register(request):
 @login_required
 def marketModulos(request):
     query = request.GET.get('q', '')
-    order_by = request.GET.get('order_by', 'id')
+    order_by = request.GET.get('order_by', 'nombre')  # Valor predeterminado 'nombre'
     direction = request.GET.get('direction', 'asc')
     status = request.GET.get('status', 'both')
-
-    if direction == 'desc':
-        order_by = f'-{order_by}'
 
     modulos_list = Modulo.objects.all()
 
     if query:
-        modulos_list = modulos_list.filter(
-            Q(nombre__icontains=query) | Q(descripcion__icontains=query)
-        )
+        modulos_list = modulos_list.filter(Q(nombre__icontains=query) | Q(descripcion__icontains=query))
 
     if status == 'active':
         modulos_list = modulos_list.filter(activo=True)
     elif status == 'inactive':
         modulos_list = modulos_list.filter(activo=False)
 
+    if direction == 'desc':
+        order_by = f'-{order_by}'
+
     modulos_list = modulos_list.order_by(order_by)
     
     paginator = Paginator(modulos_list, 10)  # Mostrar 10 módulos por página
-
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
     if request.headers.get('x-requested-with') == 'XMLHttpRequest':
-        return render(request, 'modulos_list.html', {'page_obj': page_obj})
+        return render(request, 'modulos_list.html', {'page_obj': page_obj, 'query': query, 'order_by': order_by, 'direction': direction, 'status': status})
 
-    return render(request, 'marketModulos.html', {'page_obj': page_obj, 'query': query, 'order_by': order_by, 'direction': direction, 'status': status})
+    return render(request, 'marketModulos.html', {
+        'page_obj': page_obj,
+        'query': query,
+        'order_by': order_by,
+        'direction': direction,
+        'status': status
+    })
+
 
 @login_required
 def toggle_modulo(request, modulo_nombre):
