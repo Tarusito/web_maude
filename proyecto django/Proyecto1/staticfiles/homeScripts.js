@@ -351,62 +351,102 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 
 document.addEventListener('DOMContentLoaded', function () {
-  // Código existente...
-
-  // Manejar la apertura del modal Market y cargar los módulos disponibles
   const marketModal = document.getElementById('marketModal');
   marketModal.addEventListener('show.bs.modal', function () {
-    fetch('/get_available_modules/')
+    fetchModules();
+  });
+
+  function fetchModules() {
+    const query = document.getElementById('market-search-input').value || '';
+    const orderBy = document.getElementById('market-order-by').value;
+    const direction = document.getElementById('market-direction').value;
+    const status = document.getElementById('market-status').value;
+
+    fetch(`/get_available_modules/?q=${query}&order_by=${orderBy}&direction=${direction}&status=${status}`)
       .then(response => response.text())
       .then(data => {
         const marketModalBody = document.getElementById('marketModalBody');
         marketModalBody.querySelector('#market-modulos-list').innerHTML = data;
-
-        // Reatach toggle handlers if necessary
-        attachToggleHandlers();
+        attachModuleEventHandlers();
       })
       .catch(error => console.error('Error al cargar los módulos:', error));
-  });
+  }
 
-  // Añadir el controlador de eventos para el botón de descargar
-  function attachDownloadHandlers() {
+  document.getElementById('market-search-input').addEventListener('input', fetchModules);
+  document.getElementById('market-order-by').addEventListener('change', fetchModules);
+  document.getElementById('market-direction').addEventListener('change', fetchModules);
+  document.getElementById('market-status').addEventListener('change', fetchModules);
+
+  function attachModuleEventHandlers() {
     document.querySelectorAll('.download-btn').forEach(function(button) {
       button.addEventListener('click', function() {
         const codigo = this.getAttribute('data-codigo');
+        const titulo = this.getAttribute('data-titulo');
         const chatId = document.querySelector('.chat-link.active').getAttribute('data-chat-id');
-        
-        // Obtener el token CSRF del meta tag
-        const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-        
-        fetch(`/saveModule/${chatId}/`, {
-          method: 'POST',
-          body: JSON.stringify({codigo_maude: codigo}),
-          headers: {
-            'X-CSRFToken': csrfToken,
-            'Content-Type': 'application/json'
-          },
-        })
-        .then(response => response.json())
-        .then(data => {
-          if (data.status === 'success') {
-            alert('Código descargado con éxito');
-          } else {
-            alert('Error al descargar el código');
-          }
-        })
-        .catch(error => console.error('Error:', error));
+        saveModuleVersion(chatId, titulo, codigo);
       });
     });
+
+    document.querySelectorAll('.info-btn').forEach(function(button) {
+      button.addEventListener('click', function() {
+        const moduleId = this.getAttribute('data-module-id');
+        showModuleInfo(moduleId);
+      });
+    });
+}
+
+
+  function saveModuleVersion(chatId, titulo, codigo) {
+    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+    fetch('/create_version/', {
+      method: 'POST',
+      body: JSON.stringify({ chat_id: chatId, titulo: titulo, codigo: codigo }),
+      headers: {
+        'X-CSRFToken': csrfToken,
+        'Content-Type': 'application/json',
+      },
+    })
+      .then(response => response.json())
+      .then(data => {
+        if (data.status === 'success') {
+          alert('Versión guardada con éxito');
+        } else {
+          alert('Error al guardar la versión');
+        }
+      })
+      .catch(error => console.error('Error:', error));
   }
 
-  // Llama a esta función después de cargar los módulos disponibles
-  function attachToggleHandlers() {
-    // Tu código existente para manejar los toggles...
-    attachDownloadHandlers(); // Llama a la nueva función aquí
-  }
+  function showModuleInfo(moduleId) {
+    const marketModalElement = document.getElementById('marketModal');
+    const marketModal = bootstrap.Modal.getInstance(marketModalElement);
+    const moduleInfoModal = new bootstrap.Modal(document.getElementById('moduleInfoModal'));
 
-  // Resto de tu código...
+    // Cerrar el modal del Market
+    marketModal.hide();
+
+    fetch(`/get_module_info/${moduleId}/`)
+      .then(response => response.json())
+      .then(data => {
+        const moduleInfoBody = document.getElementById('moduleInfoBody');
+        moduleInfoBody.innerHTML = `
+          <h5>Nombre: ${data.info.nombre}</h5>
+          <p>Descripción: ${data.info.descripcion}</p>
+          <pre><code>${data.info.codigo_maude}</code></pre>
+        `;
+        // Mostrar el modal de información del módulo
+        moduleInfoModal.show();
+
+        // Configurar el evento para volver a abrir el modal del Market al cerrar el modal de información del módulo
+        document.getElementById('moduleInfoModal').addEventListener('hidden.bs.modal', function () {
+          marketModal.show();
+        }, { once: true });
+      })
+      .catch(error => console.error('Error al obtener la información del módulo:', error));
+}
+
 });
+
 
 document.addEventListener('DOMContentLoaded', function () {
   // Manejar la apertura del modal de opciones del módulo

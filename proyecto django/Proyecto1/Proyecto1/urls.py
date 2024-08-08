@@ -49,5 +49,6 @@ urlpatterns = [
     path('get_versions/<int:chat_id>/', views.get_versions, name='get_versions'),
     path('select_version/', views.select_version, name='select_version'),
     path('compare_versions/', views.compare_versions, name='compare_versions'),
+    path('get_module_info/<int:module_id>/', views.get_module_info, name='get_module_info'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 

@@ -159,12 +159,11 @@ def logout_request(request):
     # Puedes añadir aquí cualquier lógica adicional que necesites.
     return redirect('login')
 
-@login_required
 def get_available_modules(request):
     query = request.GET.get('q', '')
     order_by = request.GET.get('order_by', 'nombre')
     direction = request.GET.get('direction', 'asc')
-    status = request.GET.get('status', 'active')
+    status = request.GET.get('status', 'both')
 
     modulos_list = Modulo.objects.filter(activo=True)
 
@@ -180,13 +179,26 @@ def get_available_modules(request):
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
-    return render(request, 'modulos_list.html', {
+    return render(request, 'modulos_modal_list.html', {
         'page_obj': page_obj,
         'query': query,
         'order_by': order_by,
         'direction': direction,
         'status': status
     })
+    
+@login_required
+def get_module_info(request, module_id):
+    modulo = get_object_or_404(Modulo, pk=module_id)
+    data = {
+        'info': {
+            'nombre': modulo.nombre,
+            'descripcion': modulo.descripcion,
+            'codigo_maude': modulo.codigo_maude,
+            # Agrega cualquier otra información relevante del módulo aquí
+        }
+    }
+    return JsonResponse(data)
 
 @login_required
 def create_version(request):
