@@ -35,6 +35,10 @@ from django.shortcuts import redirect
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.auth import get_user_model
 from django.db.models import Q
+from django.http import JsonResponse
+from django.shortcuts import render, get_object_or_404
+from .models import Modulo, ModuloVersion, Chat
+import difflib
 
 #Cada funcion que hay aquí es una vista
 @login_required
@@ -115,21 +119,19 @@ def delete_chats(request):
 
 @login_required
 def get_chat_content(request, chat_id):
-    # Asegúrate de que solo los usuarios autorizados puedan acceder a sus chats
     chat = get_object_or_404(Chat, id=chat_id, usuario=request.user)
     mensajes = Mensaje.objects.filter(chat=chat).order_by('fecha_creacion')
     mensajes_data = [{
         'comando': mensaje.comando,
         'respuesta': mensaje.respuesta,
-        # Agrega aquí más datos si necesitas
     } for mensaje in mensajes]
     chat_data = {
         'nombre': chat.nombre,
-        'modulo':chat.modulo,
+        'modulo': chat.modulo,
         'mensajes': mensajes_data,
-        # Agrega aquí más datos si necesitas
     }
     return JsonResponse(chat_data)
+
 
 @login_required
 @csrf_protect
@@ -156,6 +158,108 @@ def logout_request(request):
     logout(request)
     # Puedes añadir aquí cualquier lógica adicional que necesites.
     return redirect('login')
+
+@login_required
+def get_available_modules(request):
+    query = request.GET.get('q', '')
+    order_by = request.GET.get('order_by', 'nombre')
+    direction = request.GET.get('direction', 'asc')
+    status = request.GET.get('status', 'active')
+
+    modulos_list = Modulo.objects.filter(activo=True)
+
+    if query:
+        modulos_list = modulos_list.filter(Q(nombre__icontains=query) | Q(descripcion__icontains=query))
+
+    if direction == 'desc':
+        order_by = f'-{order_by}'
+
+    modulos_list = modulos_list.order_by(order_by)
+    
+    paginator = Paginator(modulos_list, 10)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    return render(request, 'modulos_list.html', {
+        'page_obj': page_obj,
+        'query': query,
+        'order_by': order_by,
+        'direction': direction,
+        'status': status
+    })
+
+@login_required
+def create_version(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        chat_id = data.get('chat_id')
+        titulo = data.get('titulo')
+        codigo = data.get('codigo')
+
+        chat = get_object_or_404(Chat, id=chat_id, usuario=request.user)
+        
+        nueva_version = ModuloVersion(chat=chat, titulo=titulo, codigo=codigo)
+        nueva_version.save()
+        
+        return JsonResponse({'status': 'success', 'version_id': nueva_version.id})
+    return JsonResponse({'status': 'error'}, status=400)
+
+@login_required
+def get_versions(request, chat_id):
+    chat = get_object_or_404(Chat, id=chat_id)
+    versiones = chat.versiones.all().values('id', 'titulo', 'fecha_creacion')
+    return JsonResponse(list(versiones), safe=False)
+
+@login_required
+def select_version(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        version_id = data.get('version_id')
+        version = get_object_or_404(ModuloVersion, id=version_id)
+        
+        chat = version.chat
+        chat.modulo = version.codigo
+        chat.save()
+        
+        return JsonResponse({'status': 'success'})
+    return JsonResponse({'status': 'error'}, status=400)
+
+@login_required
+def compare_versions(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        version_id_1 = data.get('version_id_1')
+        version_id_2 = data.get('version_id_2')
+
+        version_1 = ModuloVersion.objects.get(id=version_id_1)
+        version_2 = ModuloVersion.objects.get(id=version_id_2)
+
+        diff = difflib.unified_diff(
+            version_1.codigo.splitlines(),
+            version_2.codigo.splitlines(),
+            fromfile=f'{version_1.titulo} ({version_1.fecha_creacion})',
+            tofile=f'{version_2.titulo} ({version_2.fecha_creacion})',
+            lineterm=''
+        )
+
+        # Genera el HTML para el diff
+        diff_html = []
+        for line in diff:
+            if line.startswith('---') or line.startswith('+++'):
+                diff_html.append(f'<div><strong>{line}</strong></div>')
+            elif line.startswith('@'):
+                diff_html.append(f'<div style="background-color: #f0f0f0;"><strong>{line}</strong></div>')
+            elif line.startswith('-'):
+                diff_html.append(f'<div style="background-color: #ffeef0; color: red;">{line}</div>')
+            elif line.startswith('+'):
+                diff_html.append(f'<div style="background-color: #e6ffed; color: green;">{line}</div>')
+            else:
+                diff_html.append(f'<div>{line}</div>')
+
+        diff_html = '\n'.join(diff_html)
+
+        return JsonResponse({'status': 'success', 'diff': diff_html})
+    return JsonResponse({'status': 'error'}, status=400)
 
 def verify_email(request, uidb64, token):
     try:

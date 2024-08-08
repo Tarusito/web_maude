@@ -350,5 +350,205 @@ document.addEventListener('DOMContentLoaded', function () {
   };
 });
 
+document.addEventListener('DOMContentLoaded', function () {
+  // Código existente...
 
+  // Manejar la apertura del modal Market y cargar los módulos disponibles
+  const marketModal = document.getElementById('marketModal');
+  marketModal.addEventListener('show.bs.modal', function () {
+    fetch('/get_available_modules/')
+      .then(response => response.text())
+      .then(data => {
+        const marketModalBody = document.getElementById('marketModalBody');
+        marketModalBody.querySelector('#market-modulos-list').innerHTML = data;
 
+        // Reatach toggle handlers if necessary
+        attachToggleHandlers();
+      })
+      .catch(error => console.error('Error al cargar los módulos:', error));
+  });
+
+  // Añadir el controlador de eventos para el botón de descargar
+  function attachDownloadHandlers() {
+    document.querySelectorAll('.download-btn').forEach(function(button) {
+      button.addEventListener('click', function() {
+        const codigo = this.getAttribute('data-codigo');
+        const chatId = document.querySelector('.chat-link.active').getAttribute('data-chat-id');
+        
+        // Obtener el token CSRF del meta tag
+        const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+        
+        fetch(`/saveModule/${chatId}/`, {
+          method: 'POST',
+          body: JSON.stringify({codigo_maude: codigo}),
+          headers: {
+            'X-CSRFToken': csrfToken,
+            'Content-Type': 'application/json'
+          },
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.status === 'success') {
+            alert('Código descargado con éxito');
+          } else {
+            alert('Error al descargar el código');
+          }
+        })
+        .catch(error => console.error('Error:', error));
+      });
+    });
+  }
+
+  // Llama a esta función después de cargar los módulos disponibles
+  function attachToggleHandlers() {
+    // Tu código existente para manejar los toggles...
+    attachDownloadHandlers(); // Llama a la nueva función aquí
+  }
+
+  // Resto de tu código...
+});
+
+document.addEventListener('DOMContentLoaded', function () {
+  // Manejar la apertura del modal de opciones del módulo
+  document.getElementById('opcionesModuloModal').addEventListener('show.bs.modal', function () {
+    const chatId = document.querySelector('.chat-link.active').getAttribute('data-chat-id');
+    document.getElementById('chatIdModificar').value = chatId;
+    document.getElementById('chatIdSeleccionar').value = chatId;
+    document.getElementById('chatIdComparar').value = chatId;
+  });
+
+  // Manejar la apertura del modal de modificación del módulo y cargar el código actual
+  document.getElementById('modificarModuloModal').addEventListener('show.bs.modal', function () {
+    const chatId = document.getElementById('chatIdModificar').value;
+    fetch(`/get_chat_content/${chatId}/`)
+      .then(response => response.json())
+      .then(data => {
+        document.getElementById('codigoMaude').value = data.modulo;
+      })
+      .catch(error => console.error('Error:', error));
+  });
+
+  // Manejar el formulario de modificación del módulo
+  document.getElementById('modificarModuloForm').addEventListener('submit', function (event) {
+    event.preventDefault();
+    const chatId = document.getElementById('chatIdModificar').value;
+    const titulo = document.getElementById('tituloVersion').value;
+    const codigo = document.getElementById('codigoMaude').value;
+    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+    fetch('/create_version/', {
+      method: 'POST',
+      body: JSON.stringify({ chat_id: chatId, titulo: titulo, codigo: codigo }),
+      headers: {
+        'X-CSRFToken': csrfToken,
+        'Content-Type': 'application/json',
+      },
+    })
+      .then(response => response.json())
+      .then(data => {
+        if (data.status === 'success') {
+          alert('Versión creada con éxito');
+          document.getElementById('modificarModuloModal').querySelector('.btn-close').click();
+        } else {
+          alert('Error al crear la versión');
+        }
+      })
+      .catch(error => console.error('Error:', error));
+  });
+
+  // Manejar la apertura del modal de selección de versión
+  document.getElementById('seleccionarVersionModal').addEventListener('show.bs.modal', function () {
+    const chatId = document.getElementById('chatIdSeleccionar').value;
+    const versionSelect = document.getElementById('versionSelect');
+
+    fetch(`/get_versions/${chatId}/`)
+      .then(response => response.json())
+      .then(data => {
+        versionSelect.innerHTML = '';
+        data.forEach(version => {
+          const option = document.createElement('option');
+          option.value = version.id;
+          option.textContent = `${version.titulo} - ${version.fecha_creacion}`;
+          versionSelect.appendChild(option);
+        });
+      })
+      .catch(error => console.error('Error:', error));
+  });
+
+  // Manejar el formulario de selección de versión
+  document.getElementById('seleccionarVersionForm').addEventListener('submit', function (event) {
+    event.preventDefault();
+    const versionId = document.getElementById('versionSelect').value;
+    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+    fetch('/select_version/', {
+      method: 'POST',
+      body: JSON.stringify({ version_id: versionId }),
+      headers: {
+        'X-CSRFToken': csrfToken,
+        'Content-Type': 'application/json',
+      },
+    })
+      .then(response => response.json())
+      .then(data => {
+        if (data.status === 'success') {
+          alert('Versión seleccionada con éxito');
+          document.getElementById('seleccionarVersionModal').querySelector('.btn-close').click();
+        } else {
+          alert('Error al seleccionar la versión');
+        }
+      })
+      .catch(error => console.error('Error:', error));
+  });
+
+  // Manejar la apertura del modal de comparación de versiones
+  document.getElementById('compararVersionesModal').addEventListener('show.bs.modal', function () {
+    const chatId = document.getElementById('chatIdComparar').value;
+    const versionSelect1 = document.getElementById('versionSelect1');
+    const versionSelect2 = document.getElementById('versionSelect2');
+
+    fetch(`/get_versions/${chatId}/`)
+      .then(response => response.json())
+      .then(data => {
+        versionSelect1.innerHTML = '';
+        versionSelect2.innerHTML = '';
+        data.forEach(version => {
+          const option1 = document.createElement('option');
+          const option2 = document.createElement('option');
+          option1.value = version.id;
+          option2.value = version.id;
+          option1.textContent = `${version.titulo} - ${version.fecha_creacion}`;
+          option2.textContent = `${version.titulo} - ${version.fecha_creacion}`;
+          versionSelect1.appendChild(option1);
+          versionSelect2.appendChild(option2);
+        });
+      })
+      .catch(error => console.error('Error:', error));
+  });
+
+  // Manejar el formulario de comparación de versiones
+  document.getElementById('compararVersionesForm').addEventListener('submit', function (event) {
+    event.preventDefault();
+    const versionId1 = document.getElementById('versionSelect1').value;
+    const versionId2 = document.getElementById('versionSelect2').value;
+    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+    fetch('/compare_versions/', {
+      method: 'POST',
+      body: JSON.stringify({ version_id_1: versionId1, version_id_2: versionId2 }),
+      headers: {
+        'X-CSRFToken': csrfToken,
+        'Content-Type': 'application/json',
+      },
+    })
+      .then(response => response.json())
+      .then(data => {
+        if (data.status === 'success') {
+          document.getElementById('diffOutput').innerHTML = data.diff;
+        } else {
+          alert('Error al comparar las versiones');
+        }
+      })
+      .catch(error => console.error('Error:', error));
+  });
+});

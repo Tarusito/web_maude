@@ -2,6 +2,7 @@ import uuid
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
 from django.contrib.auth import get_user_model
+from django.utils import timezone
 
 # Crea un nuevo UserManager para tu modelo de usuario personalizado
 class UsuarioManager(BaseUserManager):
@@ -83,3 +84,12 @@ class Modulo(models.Model):
     def __str__(self):
         return f"{self.nombre} - Creado por {self.creador.email}"
     
+class ModuloVersion(models.Model):
+    chat = models.ForeignKey(Chat, on_delete=models.CASCADE, related_name='versiones')
+    titulo = models.CharField(max_length=100)
+    codigo = models.TextField()
+    fecha_creacion = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.titulo} - {self.fecha_creacion}"
+

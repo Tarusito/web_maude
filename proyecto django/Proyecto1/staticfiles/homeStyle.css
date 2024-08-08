@@ -38,3 +38,16 @@ body{
   border-radius: 50%;
 }
 
+#diffOutput {
+  overflow: auto;
+  max-height: 400px;
+  white-space: pre-wrap;
+  font-family: monospace;
+}
+
+.custom-modal-height .modal-content {
+  height: 80vh; /* Ajusta esta altura según tus necesidades */
+}
+.custom-modal-height .modal-body {
+  overflow-y: auto;
+}

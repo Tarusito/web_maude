@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
   {% load static %}
   <meta charset="UTF-8">
@@ -15,7 +14,6 @@
   <script src="{% static 'homeScripts.js' %}"></script>
   <link rel="stylesheet" href="{% static 'homeStyle.css' %}">
 </head>
-
 <body>
   <nav class="navbar navbar-expand-md navbar-dark fixed-top bg-dark" data-bs-theme="dark">
     <div class="container-fluid">
@@ -46,7 +44,6 @@
       </div>
     </div>
   </nav>
-
   <div class="container mt-5">
     <div class="row">
       <!-- Columna para los chats -->
@@ -58,16 +55,12 @@
             <a href="#" class="list-group-item-action flex-grow-1 chat-link" data-chat-id="{{ chat.id }}">
               {{ chat.nombre }}
             </a>
-            <input class="form-check-input chat-checkbox me-1" type="checkbox" value="{{ chat.id }}"
-              id="deleteChat{{ forloop.counter }}">
-
+            <input class="form-check-input chat-checkbox me-1" type="checkbox" value="{{ chat.id }}" id="deleteChat{{ forloop.counter }}">
           </div>
           {% endfor %}
-
         </div>
         <button type="button" class="btn btn-danger mt-3" id="deleteChatsButton">Eliminar seleccionados</button>
-        <button type="button" class="btn btn-primary mt-3" data-bs-toggle="modal" data-bs-target="#newChatModal">Crear
-          nuevo chat</button>
+        <button type="button" class="btn btn-primary mt-3" data-bs-toggle="modal" data-bs-target="#newChatModal">Crear nuevo chat</button>
       </div>
       <!-- Columna central, se mostrará solo si hay un chat seleccionado -->
       <div class="col-md-8">
@@ -88,27 +81,22 @@
               </div>
               {% endfor %}
             </div>
-
-
             <!-- Sección del módulo Maude, inicialmente visible -->
             <div id="maudeModuleSection" class="mb-3">
               <h5>Módulo Maude:</h5>
-              <textarea class="form-control" id="maudeCode" name="maude_code"
-                rows="5">{{ chat_actual.modulo }}</textarea>
+              <textarea class="form-control" id="maudeCode" name="maude_code" rows="5">{{ chat_actual.modulo }}</textarea>
             </div>
             <!-- Formulario para enviar nuevos comandos -->
             <div class="chat-input">
               <form id="maudeForm">
                 <div class="input-group mb-3">
-                  <input type="text" id="maudeCommand" name="maude_execution" class="form-control"
-                    placeholder="Escribe tu comando Maude aquí...">
+                  <input type="text" id="maudeCommand" name="maude_execution" class="form-control" placeholder="Escribe tu comando Maude aquí...">
                   <button class="btn btn-primary" type="button">Enviar</button>
                 </div>
               </form>
             </div>
           </div>
         </div>
-
         {% else %}
         <div class="container mt-3">
           <h4>Bienvenido a Maude Web</h4>
@@ -117,15 +105,13 @@
         {% endif %}
       </div>
       <div class="col-md-2 mt-3">
-        <button type="button" class="btn btn-primary mt-3" data-bs-toggle="modal" data-bs-target="#exampleModal">
-          Cambiar Modulo
-        </button>
+        <button type="button" class="btn btn-primary mt-3" data-bs-toggle="modal" data-bs-target="#opcionesModuloModal">Cambiar Módulo</button>
+        <button type="button" class="btn btn-secondary mt-3" data-bs-toggle="modal" data-bs-target="#marketModal">Market</button>
         <button class="btn btn-secondary mt-3 hidden" id="toggle-chats-btn">Ocultar/Mostrar Chats</button>
       </div>
     </div>
   </div>
 </body>
-
 <!-- Modal -->
 <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-lg">
@@ -135,8 +121,7 @@
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body" id="cuerpoModal" chat="">
-        <textarea class="form-control" id="maudeModuloModal" name="maude_code"
-          rows="5">{{ chat_actual.modulo }}</textarea>
+        <textarea class="form-control" id="maudeModuloModal" name="maude_code" rows="5">{{ chat_actual.modulo }}</textarea>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
@@ -145,7 +130,6 @@
     </div>
   </div>
 </div>
-
 <!-- Modal Nuevo Chat -->
 <div class="modal fade" id="newChatModal" tabindex="-1" aria-labelledby="newChatModalLabel" aria-hidden="true">
   <div class="modal-dialog">
@@ -166,10 +150,165 @@
     </div>
   </div>
 </div>
+<!-- Modal Market -->
+<div class="modal fade" id="marketModal" tabindex="-1" aria-labelledby="marketModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-xl"> <!-- Cambiado a modal-xl -->
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="marketModalLabel">Módulos Disponibles</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body" id="marketModalBody">
+        <div class="container">
+          <div class="row">
+            <div class="col">
+              <div class="row">
+                <div class="col-6">
+                  <form class="order-by" id="market-search-form">
+                    <label class="form-label">Buscador</label>
+                    <input class="form-control me-2" type="search" placeholder="Buscar" aria-label="Buscar" name="q" id="market-search-input">
+                  </form>
+                </div>
+                <div class="col-6">
+                  <div class="row mb-3">
+                    <label for="market-order-by" class="form-label">Ordenar por</label>
+                    <div class="col">
+                      <select id="market-order-by" class="form-select">
+                        <option value="nombre">Nombre</option>
+                        <option value="fecha_creacion">Fecha de creación</option>
+                      </select>
+                    </div>
+                    <div class="col">
+                      <select id="market-direction" class="form-select">
+                        <option value="asc">Ascendente</option>
+                        <option value="desc">Descendente</option>
+                      </select>
+                    </div>
+                    <div class="col">
+                      <select id="market-status" class="form-select">
+                        <option value="both">Ambos</option>
+                        <option value="active">Activos</option>
+                        <option value="inactive">Inactivos</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div id="market-modulos-list">
+            {% include 'modulos_list.html' %}
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Opciones Módulo -->
+<div class="modal fade" id="opcionesModuloModal" tabindex="-1" aria-labelledby="opcionesModuloModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="opcionesModuloModalLabel">Opciones del Módulo</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modificarModuloModal">Modificar Módulo</button>
+        <button type="button" class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#seleccionarVersionModal">Seleccionar Versión</button>
+        <button type="button" class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#compararVersionesModal">Comparar Versiones</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Modificar Módulo -->
+<div class="modal fade" id="modificarModuloModal" tabindex="-1" aria-labelledby="modificarModuloModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="modificarModuloModalLabel">Modificar Módulo</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form id="modificarModuloForm">
+          <input type="hidden" id="chatIdModificar" />
+          <div class="mb-3">
+            <label for="tituloVersion" class="form-label">Título</label>
+            <input type="text" class="form-control" id="tituloVersion" maxlength="100" required>
+          </div>
+          <div class="mb-3">
+            <label for="codigoMaude" class="form-label">Código Maude</label>
+            <textarea class="form-control" id="codigoMaude" rows="10" required></textarea>
+          </div>
+          <button type="submit" class="btn btn-primary">Guardar</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Seleccionar Versión -->
+<div class="modal fade" id="seleccionarVersionModal" tabindex="-1" aria-labelledby="seleccionarVersionModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="seleccionarVersionModalLabel">Seleccionar Versión</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form id="seleccionarVersionForm">
+          <input type="hidden" id="chatIdSeleccionar" />
+          <div class="mb-3">
+            <label for="versionSelect" class="form-label">Versión</label>
+            <select class="form-select" id="versionSelect" required></select>
+          </div>
+          <button type="submit" class="btn btn-primary">Seleccionar</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Comparar Versiones -->
+<div class="modal fade" id="compararVersionesModal" tabindex="-1" aria-labelledby="compararVersionesModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-xl custom-modal-height">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="compararVersionesModalLabel">Comparar Versiones</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="container">
+          <div class="row">
+            <div class="col-3">
+              <form id="compararVersionesForm">
+                <input type="hidden" id="chatIdComparar" />
+                <div class="mb-3">
+                  <label for="versionSelect1" class="form-label">Versión 1</label>
+                  <select class="form-select" id="versionSelect1" required></select>
+                </div>
+                <div class="mb-3">
+                  <label for="versionSelect2" class="form-label">Versión 2</label>
+                  <select class="form-select" id="versionSelect2" required></select>
+                </div>
+                <button type="submit" class="btn btn-primary">Comparar</button>
+              </form>
+            </div>
+            <div class="col-9 border">
+              <div id="diffOutput" class="mt-3"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 
 <div id="staticUrlsMaude" data-maude-logo-url="{% static 'maude_logo.jpg' %}" style="display:none;"></div>
 <div id="staticUrlsUser" data-user-logo-url="{% static 'user_default.jpg' %}" style="display:none;"></div>
-
-
-
 </html>

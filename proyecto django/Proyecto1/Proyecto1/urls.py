@@ -16,8 +16,10 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
+from django.conf import settings
 from Proyecto1 import views  # Importa la vista 'home' desde 'Proyecto1.views'
 from django.contrib.auth import views as auth_views
+from django.conf.urls.static import static
 
 urlpatterns = [
     path('', views.home, name='home'),
@@ -42,5 +44,10 @@ urlpatterns = [
     path('toggle_modulo/<str:modulo_nombre>/', views.toggle_modulo, name='toggle_modulo'),
     path('update_modulo/<str:modulo_nombre>/', views.update_modulo, name='update_modulo'),
     path('create_modulo/', views.create_modulo, name='create_modulo'),
-] 
+    path('get_available_modules/', views.get_available_modules, name='get_available_modules'),
+    path('create_version/', views.create_version, name='create_version'),
+    path('get_versions/<int:chat_id>/', views.get_versions, name='get_versions'),
+    path('select_version/', views.select_version, name='select_version'),
+    path('compare_versions/', views.compare_versions, name='compare_versions'),
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
