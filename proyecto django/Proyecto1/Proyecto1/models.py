@@ -65,13 +65,26 @@ class Usuario(AbstractBaseUser):
 class Chat(models.Model):
     nombre = models.CharField(max_length=100)
     modulo = models.TextField(default='')
+    titulo_modulo = models.CharField(max_length=255, default='Sin título')  # Nuevo campo
     usuario = models.ForeignKey('Proyecto1.Usuario', on_delete=models.CASCADE, related_name='chats')
 
 class Mensaje(models.Model):
+    class EstadoChoices(models.TextChoices):
+        NINGUNO = 'ninguno', 'Ninguno'
+        BIEN = 'bien', 'Bien'
+        MAL = 'mal', 'Mal'
+
     chat = models.ForeignKey(Chat, related_name='mensajes', on_delete=models.CASCADE)
     comando = models.TextField()
     respuesta = models.TextField()
+    titulo_modulo = models.CharField(max_length=255,default="Desconocido")
     fecha_creacion = models.DateTimeField(auto_now_add=True)
+    estado = models.CharField(
+        max_length=7,
+        choices=EstadoChoices.choices,
+        default=EstadoChoices.NINGUNO
+    )
+
     
 class Modulo(models.Model):
     nombre = models.CharField(max_length=255, unique=True, verbose_name="Nombre del Módulo")

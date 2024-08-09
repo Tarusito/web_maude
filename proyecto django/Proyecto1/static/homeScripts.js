@@ -114,52 +114,56 @@ document.addEventListener("DOMContentLoaded", function () {
     const activeChatLink = document.querySelector('.chat-link.active');
     const chatId = activeChatLink ? activeChatLink.getAttribute('data-chat-id') : '';
 
-    console.log("entro en el sendcomando");
-
     if (!chatId) {
-      console.error("No hay un chat activo seleccionado.");
-      return;
+        console.error("No hay un chat activo seleccionado.");
+        return;
     }
-    var commandInput = document.getElementById('maudeCommand');
+
+    const commandInput = document.getElementById('maudeCommand');
     const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-    var maudeCode = document.getElementById('maudeModuloModal').value;
-    var formData = new FormData();
+    const maudeCode = document.getElementById('maudeModuloModal').value;
+
+    const formData = new FormData();
     formData.append('csrfmiddlewaretoken', csrfToken);
     formData.append('maude_code', maudeCode);
     formData.append('maude_execution', commandInput.value);
 
     fetch(`/run_maude_command/${chatId}/`, {
-      method: "POST",
-      body: formData,
-      headers: { "X-Requested-With": "XMLHttpRequest" },
+        method: "POST",
+        body: formData,
+        headers: { "X-Requested-With": "XMLHttpRequest" },
     })
-      .then(response => response.json())
-      .then(data => {
+    .then(response => response.json())
+    .then(data => {
         const historySection = document.querySelector('.chat-history');
         if (historySection) {
-          historySection.innerHTML += `
-            <div class="mensaje">
-              <div class="row">
-                <p class="usuario"><img src="${userLogoUrl}" alt="logoMaude" width="20" height="20">Tú:</p>
-              </div>
-              <div class="row">
-                <p>${data.comando}</p>
-              </div>
-            </div>
-            
-            <div class="respuesta">
-              <div class="row">
-                  <p class="maude"><img src="${maudeLogoUrl}" alt="logoMaude" width="20" height="20">Maude:</p>
-              </div>
-              <div class="row">
-                <p>${data.respuesta}</p>
-              </div>
-            </div>`;
-          commandInput.value = '';
+            historySection.innerHTML += `
+                <div class="mensaje">
+                    <div class="row">
+                        <p class="usuario"><img src="${userLogoUrl}" alt="logoMaude" width="20" height="20">Tú:</p>
+                    </div>
+                    <div class="row">
+                        <p>${data.comando}</p>
+                    </div>
+                </div>
+                <div class="respuesta">
+                    <div class="row">
+                        <p class="maude">
+                            <img src="${maudeLogoUrl}" alt="logoMaude" width="20" height="20">Maude(<span class="modulo-titulo">${data.titulo_modulo}</span>):
+                        </p>
+                    </div>
+                    <div class="row">
+                        <p>${data.respuesta}</p>
+                    </div>
+                </div>`;
+            commandInput.value = '';
+            historySection.scrollTop = historySection.scrollHeight; // Desplazar la vista al final
         }
-      })
-      .catch(error => console.error('Error:', error));
-  }
+    })
+    .catch(error => console.error('Error:', error));
+}
+
+
 
   // Asigna el controlador sendMaudeCommand al botón de enviar en el formulario actualizado del chat
   document.addEventListener('click', function (event) {
@@ -330,13 +334,45 @@ document.addEventListener('DOMContentLoaded', function () {
     idChat.setAttribute('chat', chatId); // Usar chatId que ahora está disponible como argumento
     let contentHtml = `<h4 class="mt-3">${data.nombre}</h4><div class="chat-history">`;
     let contentModal = data.modulo;
+    
     data.mensajes.forEach(mensaje => {
-        contentHtml += `<div class="mensaje"><div class="row"><p class="usuario"><img src="${userLogoUrl}" alt="logoMaude" width="20" height="20">Tú:</p></div><div class="row"><p>${mensaje.comando}</p></div></div><div class="respuesta"><div class="row"><p class="maude"><img src="${maudeLogoUrl}" alt="logoMaude" width="20" height="20">Maude:</p></div><div class="row"><p>${mensaje.respuesta}</p></div></div>`;
+        contentHtml += `<div class="mensaje">
+                            <div class="row">
+                                <p class="usuario">
+                                    <img src="${userLogoUrl}" alt="logoMaude" width="20" height="20">Tú:
+                                </p>
+                            </div>
+                            <div class="row">
+                                <p>${mensaje.comando}</p>
+                            </div>
+                        </div>
+                        <div class="respuesta">
+                            <div class="row">
+                                <p class="maude">
+                                    <img src="${maudeLogoUrl}" alt="logoMaude" width="20" height="20">Maude(<span class="modulo-titulo">${mensaje.titulo_modulo}</span>): 
+                                </p>
+                            </div>
+                            <div class="row">
+                                <p>${mensaje.respuesta}</p>
+                            </div>
+                        </div>`;
     });
-    contentHtml += `</div><div class="chat-input"><form id="maudeForm"><input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}"><div class="input-group mb-3"><input type="text" id="maudeCommand" name="maude_execution" class="form-control" placeholder="Escribe tu comando aquí..."><button class="btn btn-primary" type="button">Enviar</button></div></form></div>`;
+
+    contentHtml += `</div>
+                    <div class="chat-input">
+                        <form id="maudeForm">
+                            <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+                            <div class="input-group mb-3">
+                                <input type="text" id="maudeCommand" name="maude_execution" class="form-control" placeholder="Escribe tu comando aquí...">
+                                <button class="btn btn-primary" type="button">Enviar</button>
+                            </div>
+                        </form>
+                    </div>`;
     chatContainer.innerHTML = contentHtml;
     moduloContainer.innerHTML = contentModal;
-  }
+}
+
+
   addChatListeners();
 
   window.renderChatList = function (chats) { // Función global para llamar desde cualquier actualización de lista
@@ -399,22 +435,28 @@ document.addEventListener('DOMContentLoaded', function () {
   function saveModuleVersion(chatId, titulo, codigo) {
     const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
     fetch('/create_version/', {
-      method: 'POST',
-      body: JSON.stringify({ chat_id: chatId, titulo: titulo, codigo: codigo }),
+      method: "POST",
+      body: JSON.stringify({
+          chat_id: chatId,
+          titulo: nuevoTitulo,
+          codigo: nuevoCodigo
+      }),
       headers: {
-        'X-CSRFToken': csrfToken,
-        'Content-Type': 'application/json',
+          "X-CSRFToken": csrfToken,
+          "Content-Type": "application/json"
       },
-    })
-      .then(response => response.json())
-      .then(data => {
-        if (data.status === 'success') {
-          alert('Versión guardada con éxito');
-        } else {
-          alert('Error al guardar la versión');
-        }
-      })
-      .catch(error => console.error('Error:', error));
+  })
+  .then(response => response.json())
+  .then(data => {
+      if (data.status === 'success') {
+          // Actualizar el título en la interfaz
+          document.querySelector('.chat-title').innerText = nuevoTitulo;
+          // Actualizar el código mostrado en la interfaz si es necesario
+      } else {
+          console.error('Error al crear la nueva versión');
+      }
+  })
+  .catch(error => console.error('Error:', error));
   }
 
   function showModuleInfo(moduleId) {
@@ -522,23 +564,24 @@ document.addEventListener('DOMContentLoaded', function () {
     const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 
     fetch('/select_version/', {
-      method: 'POST',
-      body: JSON.stringify({ version_id: versionId }),
+      method: "POST",
+      body: JSON.stringify({ version_id: selectedVersionId }),
       headers: {
-        'X-CSRFToken': csrfToken,
-        'Content-Type': 'application/json',
+          "X-CSRFToken": csrfToken,
+          "Content-Type": "application/json",
       },
-    })
-      .then(response => response.json())
-      .then(data => {
-        if (data.status === 'success') {
-          alert('Versión seleccionada con éxito');
-          document.getElementById('seleccionarVersionModal').querySelector('.btn-close').click();
-        } else {
-          alert('Error al seleccionar la versión');
-        }
-      })
-      .catch(error => console.error('Error:', error));
+  })
+  .then(response => response.json())
+  .then(data => {
+      if (data.status === 'success') {
+          // Aquí también puedes actualizar el título del módulo en la UI
+          document.querySelector('.chat-title').innerText = selectedVersionTitle;
+          // Actualizar el código mostrado si es necesario
+      } else {
+          console.error('Error al seleccionar la versión');
+      }
+  })
+  .catch(error => console.error('Error:', error));  
   });
 
   // Manejar la apertura del modal de comparación de versiones

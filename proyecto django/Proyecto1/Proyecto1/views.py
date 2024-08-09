@@ -94,13 +94,15 @@ def password_reset_confirm(request, uidb64, token):
     else:
         return HttpResponse('Enlace inválido o caducado')
 
+@login_required
 def chat_view(request, chat_id):
     chat = Chat.objects.get(id=chat_id)
     if request.method == 'POST':
         comando = request.POST.get('maude_execution')
+        estado = request.POST.get('estado', Mensaje.EstadoChoices.NINGUNO)  # Por defecto 'Ninguno'
         respuesta = interpret_command(comando)  # Procesa el comando con Maude
-        Mensaje.objects.create(chat=chat, comando=comando, respuesta=respuesta)  # Guarda el mensaje y la respuesta en la base de datos
-        return redirect('chat', chat_id=chat.id)  # Redirige al mismo chat después de enviar el comando
+        Mensaje.objects.create(chat=chat, comando=comando, respuesta=respuesta, estado=estado)
+        return redirect('chat', chat_id=chat.id)
 
     mensajes = Mensaje.objects.filter(chat=chat).order_by('-fecha_creacion')
     return render(request, 'chat.html', {'chat': chat, 'mensajes': mensajes})
@@ -124,6 +126,7 @@ def get_chat_content(request, chat_id):
     mensajes_data = [{
         'comando': mensaje.comando,
         'respuesta': mensaje.respuesta,
+        'titulo_modulo': mensaje.titulo_modulo  # Asegúrate de incluir el título del módulo
     } for mensaje in mensajes]
     chat_data = {
         'nombre': chat.nombre,
@@ -132,13 +135,13 @@ def get_chat_content(request, chat_id):
     }
     return JsonResponse(chat_data)
 
-
 @login_required
 @csrf_protect
 def new_chat(request):
         data = json.loads(request.body)
         chat_name = data.get('nombre')
-        Chat.objects.create(nombre=chat_name, usuario=request.user)
+        titulo_modulo = data.get('titulo_modulo', 'Sin título')
+        Chat.objects.create(nombre=chat_name, titulo_modulo=titulo_modulo, usuario=request.user)
         # Devuelve todos los chats
         chats = Chat.objects.filter(usuario=request.user)
         chats_data = [{'id': chat.id, 'nombre': chat.nombre} for chat in chats]
@@ -147,11 +150,16 @@ def new_chat(request):
 @login_required
 def saveModule(request, chat_id):
     chat = Chat.objects.get(id=chat_id, usuario=request.user)
-    modulo = request.body.decode('utf-8')
-    print(modulo)
+    data = json.loads(request.body)
+    modulo = data.get('codigo', '')
+    titulo_modulo = data.get('titulo', 'Sin título')  # Obtener el nuevo título del módulo
+
     chat.modulo = modulo
+    chat.titulo_modulo = titulo_modulo  # Actualizar el título del módulo
     chat.save()
+
     return JsonResponse({'status': 'success', 'message': 'Módulo guardado correctamente.'})
+
     
 
 def logout_request(request):
@@ -210,8 +218,14 @@ def create_version(request):
 
         chat = get_object_or_404(Chat, id=chat_id, usuario=request.user)
         
+        # Crear y guardar la nueva versión del módulo
         nueva_version = ModuloVersion(chat=chat, titulo=titulo, codigo=codigo)
         nueva_version.save()
+
+        # Actualizar el chat con el nuevo título y código del módulo
+        chat.titulo_modulo = titulo
+        chat.modulo = codigo
+        chat.save()
         
         return JsonResponse({'status': 'success', 'version_id': nueva_version.id})
     return JsonResponse({'status': 'error'}, status=400)
@@ -231,6 +245,7 @@ def select_version(request):
         
         chat = version.chat
         chat.modulo = version.codigo
+        chat.titulo_modulo = version.titulo  # Actualizar el título del módulo
         chat.save()
         
         return JsonResponse({'status': 'success'})
@@ -560,10 +575,10 @@ def run_maude_command(request, chat_id):
         response = str(resultado)
         chat.modulo = user_code
         chat.save()
-        Mensaje.objects.create(chat=chat, comando=maude_execution, respuesta=response)
+        Mensaje.objects.create(chat=chat, comando=maude_execution, respuesta=response, titulo_modulo=chat.titulo_modulo)
 
         # Devolver la respuesta como JSON
-        return JsonResponse({'comando': maude_execution, 'respuesta': response})
+        return JsonResponse({'comando': maude_execution, 'respuesta': response, 'titulo_modulo': chat.titulo_modulo})
     else:
         # Manejar solicitudes no AJAX si es necesario
         return JsonResponse({'error': 'Solicitud incorrecta'}, status=400)
