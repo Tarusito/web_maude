@@ -127,7 +127,8 @@ def get_chat_content(request, chat_id):
         'comando': mensaje.comando,
         'respuesta': mensaje.respuesta,
         'titulo_modulo': mensaje.titulo_modulo,
-        'mensaje_id':mensaje.id
+        'mensaje_id':mensaje.id,
+        'estado':mensaje.estado
     } for mensaje in mensajes]
     chat_data = {
         'nombre': chat.nombre,
