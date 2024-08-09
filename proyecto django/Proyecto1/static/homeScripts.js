@@ -178,6 +178,14 @@ document.addEventListener("DOMContentLoaded", function () {
                     <div class="row">
                         <p>${data.respuesta}</p>
                     </div>
+                    <div class="row">
+                        <button class="btn btn-outline-success" onclick="actualizarEstadoMensaje('${data.mensaje_id}', 'bien')">
+                            <i class="bi bi-check-circle"></i>
+                        </button>
+                        <button class="btn btn-outline-danger" onclick="actualizarEstadoMensaje('${data.mensaje_id}', 'mal')">
+                            <i class="bi bi-x-circle"></i>
+                        </button>
+                    </div>
                 </div>`;
             commandInput.value = '';
             historySection.scrollTop = historySection.scrollHeight; // Desplazar la vista al final
@@ -185,6 +193,7 @@ document.addEventListener("DOMContentLoaded", function () {
     })
     .catch(error => console.error('Error:', error));
 }
+
 
 
 
@@ -363,6 +372,8 @@ document.addEventListener('DOMContentLoaded', function () {
       const estado = mensaje.estado;
       const botonBienActivo = estado === 'bien' ? 'active' : '';
       const botonMalActivo = estado === 'mal' ? 'active' : '';
+      const botonBienColor = estado !== 'mal' ? 'text-success' : 'text-muted';
+      const botonMalColor = estado !== 'bien' ? 'text-danger' : 'text-muted';
     
       contentHtml += `
         <div class="mensaje" data-mensaje-id="${mensaje.mensaje_id}">
@@ -386,10 +397,10 @@ document.addEventListener('DOMContentLoaded', function () {
             <p>${mensaje.respuesta}</p>
           </div>
           <div class="row">
-            <button class="btn btn-outline-success ${botonBienActivo}" onclick="actualizarEstadoMensaje('${mensaje.mensaje_id}', 'bien')">
+            <button class="btn btn-outline-success ${botonBienActivo} ${botonBienColor}" onclick="actualizarEstadoMensaje('${mensaje.mensaje_id}', 'bien')">
               <i class="bi bi-check-circle"></i>
             </button>
-            <button class="btn btn-outline-danger ${botonMalActivo}" onclick="actualizarEstadoMensaje('${mensaje.mensaje_id}', 'mal')">
+            <button class="btn btn-outline-danger ${botonMalActivo} ${botonMalColor}" onclick="actualizarEstadoMensaje('${mensaje.mensaje_id}', 'mal')">
               <i class="bi bi-x-circle"></i>
             </button>
           </div>
@@ -410,8 +421,8 @@ document.addEventListener('DOMContentLoaded', function () {
     
     chatContainer.innerHTML = contentHtml;
     moduloContainer.innerHTML = contentModal;
-    
 }
+
 
   addChatListeners();
 
