@@ -50,5 +50,6 @@ urlpatterns = [
     path('select_version/', views.select_version, name='select_version'),
     path('compare_versions/', views.compare_versions, name='compare_versions'),
     path('get_module_info/<int:module_id>/', views.get_module_info, name='get_module_info'),
+    path('update_message_status/', views.update_message_status, name='update_message_status'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 

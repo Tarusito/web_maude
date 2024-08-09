@@ -126,7 +126,8 @@ def get_chat_content(request, chat_id):
     mensajes_data = [{
         'comando': mensaje.comando,
         'respuesta': mensaje.respuesta,
-        'titulo_modulo': mensaje.titulo_modulo  # Asegúrate de incluir el título del módulo
+        'titulo_modulo': mensaje.titulo_modulo,
+        'mensaje_id':mensaje.id
     } for mensaje in mensajes]
     chat_data = {
         'nombre': chat.nombre,
@@ -207,6 +208,27 @@ def get_module_info(request, module_id):
         }
     }
     return JsonResponse(data)
+
+@login_required
+@require_http_methods(["POST"])
+def update_message_status(request):
+    try:
+        data = json.loads(request.body)
+        mensaje_id = data.get('mensaje_id')
+        nuevo_estado = data.get('estado')
+
+        mensaje = Mensaje.objects.get(id=mensaje_id, chat__usuario=request.user)
+
+        if mensaje and nuevo_estado in Mensaje.EstadoChoices.values:
+            mensaje.estado = nuevo_estado
+            mensaje.save()
+            return JsonResponse({'status': 'success'})
+        else:
+            return JsonResponse({'status': 'error', 'message': 'Estado o mensaje no válido'}, status=400)
+
+    except Exception as e:
+        return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
+
 
 @login_required
 def create_version(request):
@@ -575,10 +597,10 @@ def run_maude_command(request, chat_id):
         response = str(resultado)
         chat.modulo = user_code
         chat.save()
-        Mensaje.objects.create(chat=chat, comando=maude_execution, respuesta=response, titulo_modulo=chat.titulo_modulo)
-
+        mensaje = Mensaje.objects.create(chat=chat, comando=maude_execution, respuesta=response, titulo_modulo=chat.titulo_modulo)
+        print("id mensaje " + str(mensaje.id))
         # Devolver la respuesta como JSON
-        return JsonResponse({'comando': maude_execution, 'respuesta': response, 'titulo_modulo': chat.titulo_modulo})
+        return JsonResponse({'comando': maude_execution, 'respuesta': response, 'titulo_modulo': chat.titulo_modulo, 'mensaje_id': mensaje.id})
     else:
         # Manejar solicitudes no AJAX si es necesario
         return JsonResponse({'error': 'Solicitud incorrecta'}, status=400)

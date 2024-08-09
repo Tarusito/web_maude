@@ -75,6 +75,7 @@ class Mensaje(models.Model):
         MAL = 'mal', 'Mal'
 
     chat = models.ForeignKey(Chat, related_name='mensajes', on_delete=models.CASCADE)
+    id = models.AutoField(primary_key=True)
     comando = models.TextField()
     respuesta = models.TextField()
     titulo_modulo = models.CharField(max_length=255,default="Desconocido")

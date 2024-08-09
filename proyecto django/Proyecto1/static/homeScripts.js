@@ -59,53 +59,76 @@ document.addEventListener("DOMContentLoaded", function () {
       this.classList.setAttribute('aria-selected', 'true');
       var chatId = this.getAttribute('data-chat-id');
       fetch(`/get_chat_content/${chatId}/`)
-        .then(response => response.json())
-        .then(data => {
-          console.log(data);
-          const chatContainer = document.querySelector('.col-md-8');
-          const moduloContainer = document.getElementById('maudeModuloModal');
-          const idChat = document.getElementById('cuerpoModal')
-          idChat.setAttribute('chat', chatId);
-          moduloContainer
-          let contentHtml = `
-            <h4 class="mt-3">${data.nombre}</h4>
-            <div class="chat-history">
-              `;
-          let contentModal = data.modulo;
-          data.mensajes.forEach(mensaje => {
-            contentHtml += `
-              <div class="mensaje">
-              <div class="row">
-                <p class="usuario"><img src="${userLogoUrl}" alt="logoMaude" width="20" height="20">Tú:</p>
-              </div>
-              <div class="row">
-                <p>${mensaje.comando}</p>
-              </div>
-            </div>
-            
-            <div class="respuesta">
-              <div class="row">
-                  <p class="maude"><img src="${maudeLogoUrl}" alt="logoMaude" width="20" height="20">Maude:</p>
-              </div>
-              <div class="row">
-                <p>${mensaje.respuesta}</p>
-              </div>
-            </div>`;
-          });
-          contentHtml += `</div>
-              <div class="chat-input">
-                <form id="maudeForm">
-                  <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
-                  <div class="input-group mb-3">
-                    <input type="text" id="maudeCommand" name="maude_execution" class="form-control" placeholder="Escribe tu comando aquí...">
-                    <button class="btn btn-primary" type="button">Enviar</button>
-                  </div>
-                </form>
-              </div>`;
-          chatContainer.innerHTML = contentHtml;
-          moduloContainer.innerHTML = contentModal;
-        })
-        .catch(error => console.error('Error:', error));
+  .then(response => response.json())
+  .then(data => {
+    console.log(data); // Verifica que los mensajes tengan un id en la consola
+    const chatContainer = document.querySelector('.col-md-8');
+    const moduloContainer = document.getElementById('maudeModuloModal');
+    const idChat = document.getElementById('cuerpoModal');
+    idChat.setAttribute('chat', chatId);
+    
+    let contentHtml = `
+      <h4 class="mt-3">${data.nombre}</h4>
+      <div class="chat-history">
+    `;
+    
+    let contentModal = data.modulo;
+    
+    data.mensajes.forEach((mensaje) => {
+      const estado = mensaje.estado;
+      const botonBienActivo = estado === 'bien' ? 'active' : '';
+      const botonMalActivo = estado === 'mal' ? 'active' : '';
+    
+      contentHtml += `
+        <div class="mensaje" data-mensaje-id="${mensaje.mensaje_id}">
+          <div class="row">
+            <p class="usuario">
+              <img src="${userLogoUrl}" alt="logoMaude" width="20" height="20">Tú:
+            </p>
+          </div>
+          <div class="row">
+            <p>${mensaje.comando}</p>
+          </div>
+        </div>
+        <div class="respuesta">
+          <div class="row">
+            <p class="maude">
+              <img src="${maudeLogoUrl}" alt="logoMaude" width="20" height="20">Maude: 
+              <span class="modulo-titulo">${mensaje.titulo_modulo}</span>
+            </p>
+          </div>
+          <div class="row">
+            <p>${mensaje.respuesta}</p>
+          </div>
+          <div class="row">
+            <button class="btn btn-outline-success ${botonBienActivo}" onclick="actualizarEstadoMensaje('${mensaje.mensaje_id}', 'bien')">
+              <i class="bi bi-check-circle"></i>
+            </button>
+            <button class="btn btn-outline-danger ${botonMalActivo}" onclick="actualizarEstadoMensaje('${mensaje.mensaje_id}', 'mal')">
+              <i class="bi bi-x-circle"></i>
+            </button>
+          </div>
+        </div>`;
+    });
+    
+    contentHtml += `
+      </div>
+      <div class="chat-input">
+        <form id="maudeForm">
+          <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+          <div class="input-group mb-3">
+            <input type="text" id="maudeCommand" name="maude_execution" class="form-control" placeholder="Escribe tu comando aquí...">
+            <button class="btn btn-primary" type="button">Enviar</button>
+          </div>
+        </form>
+      </div>`;
+    
+    chatContainer.innerHTML = contentHtml;
+    moduloContainer.innerHTML = contentModal;
+    
+  })
+  .catch(error => console.error('Error:', error));
+
     });
   });
 
@@ -121,7 +144,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     const commandInput = document.getElementById('maudeCommand');
     const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-    const maudeCode = document.getElementById('maudeModuloModal').value;
+    const maudeCode = document.getElementById('codigoMaude').value;
 
     const formData = new FormData();
     formData.append('csrfmiddlewaretoken', csrfToken);
@@ -138,7 +161,7 @@ document.addEventListener("DOMContentLoaded", function () {
         const historySection = document.querySelector('.chat-history');
         if (historySection) {
             historySection.innerHTML += `
-                <div class="mensaje">
+                <div class="mensaje" data-mensaje-id="${data.mensaje_id}">
                     <div class="row">
                         <p class="usuario"><img src="${userLogoUrl}" alt="logoMaude" width="20" height="20">Tú:</p>
                     </div>
@@ -162,6 +185,7 @@ document.addEventListener("DOMContentLoaded", function () {
     })
     .catch(error => console.error('Error:', error));
 }
+
 
 
 
@@ -335,43 +359,59 @@ document.addEventListener('DOMContentLoaded', function () {
     let contentHtml = `<h4 class="mt-3">${data.nombre}</h4><div class="chat-history">`;
     let contentModal = data.modulo;
     
-    data.mensajes.forEach(mensaje => {
-        contentHtml += `<div class="mensaje">
-                            <div class="row">
-                                <p class="usuario">
-                                    <img src="${userLogoUrl}" alt="logoMaude" width="20" height="20">Tú:
-                                </p>
-                            </div>
-                            <div class="row">
-                                <p>${mensaje.comando}</p>
-                            </div>
-                        </div>
-                        <div class="respuesta">
-                            <div class="row">
-                                <p class="maude">
-                                    <img src="${maudeLogoUrl}" alt="logoMaude" width="20" height="20">Maude(<span class="modulo-titulo">${mensaje.titulo_modulo}</span>): 
-                                </p>
-                            </div>
-                            <div class="row">
-                                <p>${mensaje.respuesta}</p>
-                            </div>
-                        </div>`;
+    data.mensajes.forEach((mensaje) => {
+      const estado = mensaje.estado;
+      const botonBienActivo = estado === 'bien' ? 'active' : '';
+      const botonMalActivo = estado === 'mal' ? 'active' : '';
+    
+      contentHtml += `
+        <div class="mensaje" data-mensaje-id="${mensaje.mensaje_id}">
+          <div class="row">
+            <p class="usuario">
+              <img src="${userLogoUrl}" alt="logoMaude" width="20" height="20">Tú:
+            </p>
+          </div>
+          <div class="row">
+            <p>${mensaje.comando}</p>
+          </div>
+        </div>
+        <div class="respuesta">
+          <div class="row">
+            <p class="maude">
+              <img src="${maudeLogoUrl}" alt="logoMaude" width="20" height="20">Maude: 
+              <span class="modulo-titulo">${mensaje.titulo_modulo}</span>
+            </p>
+          </div>
+          <div class="row">
+            <p>${mensaje.respuesta}</p>
+          </div>
+          <div class="row">
+            <button class="btn btn-outline-success ${botonBienActivo}" onclick="actualizarEstadoMensaje('${mensaje.mensaje_id}', 'bien')">
+              <i class="bi bi-check-circle"></i>
+            </button>
+            <button class="btn btn-outline-danger ${botonMalActivo}" onclick="actualizarEstadoMensaje('${mensaje.mensaje_id}', 'mal')">
+              <i class="bi bi-x-circle"></i>
+            </button>
+          </div>
+        </div>`;
     });
-
-    contentHtml += `</div>
-                    <div class="chat-input">
-                        <form id="maudeForm">
-                            <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
-                            <div class="input-group mb-3">
-                                <input type="text" id="maudeCommand" name="maude_execution" class="form-control" placeholder="Escribe tu comando aquí...">
-                                <button class="btn btn-primary" type="button">Enviar</button>
-                            </div>
-                        </form>
-                    </div>`;
+    
+    contentHtml += `
+      </div>
+      <div class="chat-input">
+        <form id="maudeForm">
+          <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+          <div class="input-group mb-3">
+            <input type="text" id="maudeCommand" name="maude_execution" class="form-control" placeholder="Escribe tu comando aquí...">
+            <button class="btn btn-primary" type="button">Enviar</button>
+          </div>
+        </form>
+      </div>`;
+    
     chatContainer.innerHTML = contentHtml;
     moduloContainer.innerHTML = contentModal;
+    
 }
-
 
   addChatListeners();
 
@@ -560,7 +600,7 @@ document.addEventListener('DOMContentLoaded', function () {
   // Manejar el formulario de selección de versión
   document.getElementById('seleccionarVersionForm').addEventListener('submit', function (event) {
     event.preventDefault();
-    const versionId = document.getElementById('versionSelect').value;
+    const selectedVersionId = document.getElementById('versionSelect').value;
     const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 
     fetch('/select_version/', {
@@ -635,3 +675,50 @@ document.addEventListener('DOMContentLoaded', function () {
       .catch(error => console.error('Error:', error));
   });
 });
+
+function actualizarEstadoMensaje(mensajeId, nuevoEstado) {
+  console.log('ID del mensaje:', mensajeId);  // Asegúrate de que este valor no sea undefined
+
+  const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+  fetch(`/update_message_status/`, {
+      method: 'POST',
+      body: JSON.stringify({ mensaje_id: mensajeId, estado: nuevoEstado }),
+      headers: {
+          'X-CSRFToken': csrfToken,
+          'Content-Type': 'application/json',
+      },
+  })
+  .then(response => {
+      if (!response.ok) {
+          throw new Error('Network response was not ok');
+      }
+      return response.json();
+  })
+  .then(data => {
+      if (data.status === 'success') {
+          // Actualiza los botones según el nuevo estado
+          const botonBien = document.querySelector(`button[onclick="actualizarEstadoMensaje('${mensajeId}', 'bien')"]`);
+          const botonMal = document.querySelector(`button[onclick="actualizarEstadoMensaje('${mensajeId}', 'mal')"]`);
+
+          if (nuevoEstado === 'bien') {
+              botonBien.classList.add('active');
+              botonBien.classList.remove('text-muted');
+              botonBien.classList.add('text-success');
+
+              botonMal.classList.remove('active');
+              botonMal.classList.add('text-muted');
+              botonMal.classList.remove('text-danger');
+          } else if (nuevoEstado === 'mal') {
+              botonMal.classList.add('active');
+              botonMal.classList.remove('text-muted');
+              botonMal.classList.add('text-danger');
+
+              botonBien.classList.remove('active');
+              botonBien.classList.add('text-muted');
+              botonBien.classList.remove('text-success');
+          }
+      }
+  })
+  .catch(error => console.error('Error al actualizar el estado del mensaje:', error));
+}

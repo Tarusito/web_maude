@@ -4,17 +4,17 @@ from .models import Chat, Mensaje, Usuario, Modulo
 
 class UsuarioAdmin(BaseUserAdmin):
     model = Usuario
-    list_display = ('email', 'nombre', 'email_verificado', 'is_active', 'is_admin')  # Asegúrate de incluir todos los campos deseados aquí
-    list_filter = ('is_active', 'is_admin', 'email_verificado')  # Y aquí
+    list_display = ('email', 'nombre', 'email_verificado', 'is_active', 'is_admin')
+    list_filter = ('is_active', 'is_admin', 'email_verificado')
     fieldsets = (
         (None, {'fields': ('email', 'nombre', 'password')}),
-        ('Permissions', {'fields': ('is_admin', 'is_active')}),  # Asegúrate de que todos los campos necesarios estén aquí, excepto los no editables
-        ('Status', {'fields': ('email_verificado',)}),  # Puedes incluir campos adicionales aquí
+        ('Permissions', {'fields': ('is_admin', 'is_active')}),
+        ('Status', {'fields': ('email_verificado',)}),
     )
     add_fieldsets = (
         (None, {
             'classes': ('wide',),
-            'fields': ('email', 'nombre', 'password1', 'password2', 'is_active', 'is_admin', 'email_verificado')}  # Y aquí
+            'fields': ('email', 'nombre', 'password1', 'password2', 'is_active', 'is_admin', 'email_verificado')}
         ),
     )
     search_fields = ('email', 'nombre')
@@ -22,26 +22,25 @@ class UsuarioAdmin(BaseUserAdmin):
     filter_horizontal = ()  # Mantén esto vacío si tu modelo no usa 'groups' ni 'user_permissions'
 
 class ChatAdmin(admin.ModelAdmin):
-    list_display = ['nombre', 'usuario']  # Puedes ajustar esta lista para mostrar los campos deseados
-    search_fields = ['nombre', 'usuario__email']  # Permite buscar por nombre de chat y email del usuario
-    list_filter = ['usuario']  # Permite filtrar por usuario
+    list_display = ['id', 'nombre', 'usuario']  # Agrega 'id' para mostrar el ID del chat
+    search_fields = ['nombre', 'usuario__email']
+    list_filter = ['usuario']
 
 admin.site.register(Chat, ChatAdmin)
 
 class MensajeAdmin(admin.ModelAdmin):
-    list_display = ['chat', 'comando', 'fecha_creacion']  # Ajusta a los campos que quieras mostrar
-    search_fields = ['chat__nombre', 'comando']  # Buscar por nombre del chat y comando
-    list_filter = ['chat', 'fecha_creacion']  # Filtrar por chat y fecha de creación
-    date_hierarchy = 'fecha_creacion'  # Permite navegar rápidamente a través de las fechas
+    list_display = ['id', 'chat', 'comando', 'fecha_creacion']  # Agrega 'id' para mostrar el ID del mensaje
+    search_fields = ['chat__nombre', 'comando']
+    list_filter = ['chat', 'fecha_creacion']
+    date_hierarchy = 'fecha_creacion'
 
 admin.site.register(Mensaje, MensajeAdmin)
 
-
 admin.site.register(Usuario, UsuarioAdmin)
 
-
 class ModuloAdmin(admin.ModelAdmin):
-    list_display = ('nombre', 'descripcion', 'codigo_maude', 'creador', 'activo')
+    list_display = ('id', 'nombre', 'descripcion', 'codigo_maude', 'creador', 'activo')  # Agrega 'id' para mostrar el ID del módulo
     list_filter = ('activo',)
+    search_fields = ('nombre', 'descripcion', 'codigo_maude')  # Habilita la búsqueda en estos campos
 
 admin.site.register(Modulo, ModuloAdmin)

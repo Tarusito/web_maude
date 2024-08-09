@@ -51,3 +51,19 @@ body{
 .custom-modal-height .modal-body {
   overflow-y: auto;
 }
+
+.btn-outline-success,
+.btn-outline-danger {
+    visibility: visible;
+    opacity: 1;
+}
+
+.btn-outline-success.active {
+    background-color: #28a745;
+    color: white;
+}
+
+.btn-outline-danger.active {
+    background-color: #dc3545;
+    color: white;
+}
