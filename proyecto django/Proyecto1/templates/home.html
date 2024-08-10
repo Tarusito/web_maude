@@ -107,6 +107,7 @@
       <div class="col-md-2 mt-3">
         <button type="button" class="btn btn-primary mt-3" data-bs-toggle="modal" data-bs-target="#opcionesModuloModal">Cambiar Módulo</button>
         <button type="button" class="btn btn-secondary mt-3" data-bs-toggle="modal" data-bs-target="#marketModal">Market</button>
+        <button type="button" class="btn btn-success mt-3" data-bs-toggle="modal" data-bs-target="#entregarModal">Entregar</button>
         <button class="btn btn-secondary mt-3 hidden" id="toggle-chats-btn">Ocultar/Mostrar Chats</button>
       </div>
     </div>
@@ -372,6 +373,32 @@
   </div>
 </div>
 
+<!-- Modal para Entregar Mensajes -->
+<div class="modal fade" id="entregarModal" tabindex="-1" aria-labelledby="entregarModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="entregarModalLabel">Entregar Mensajes</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div id="mensajesBienContainer">
+          <!-- Aquí se mostrarán los mensajes con estado "bien" -->
+        </div>
+        <form id="entregarForm">
+          <div class="mb-3">
+            <label for="administradorSelect" class="form-label">Selecciona el Administrador</label>
+            <select class="form-select" id="administradorSelect" required>
+              <option value="">Selecciona un administrador</option>
+              <!-- Aquí se cargará la lista de administradores -->
+            </select>
+          </div>
+          <button type="submit" class="btn btn-primary">Enviar al Administrador</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
 
 <div id="staticUrlsMaude" data-maude-logo-url="{% static 'maude_logo.jpg' %}" style="display:none;"></div>
 <div id="staticUrlsUser" data-user-logo-url="{% static 'user_default.jpg' %}" style="display:none;"></div>

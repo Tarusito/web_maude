@@ -162,7 +162,32 @@ def saveModule(request, chat_id):
 
     return JsonResponse({'status': 'success', 'message': 'Módulo guardado correctamente.'})
 
+
+@login_required
+def get_mensajes_bien(request, chat_id):
+    chat = get_object_or_404(Chat, id=chat_id, usuario=request.user)
+    mensajes = Mensaje.objects.filter(chat=chat, estado=Mensaje.EstadoChoices.BIEN)
+    mensajes_data = [{'comando': m.comando, 'respuesta': m.respuesta} for m in mensajes]
+    administradores = Usuario.objects.filter(is_admin=True).values('id', 'nombre')
+    return JsonResponse({'mensajes': mensajes_data, 'administradores': list(administradores)})
+
+
+@login_required
+@require_http_methods(["POST"])
+def enviar_mensajes_bien(request, chat_id):
+    data = json.loads(request.body)
+    admin_id = data.get('administrador_id')
+    administrador = get_object_or_404(Usuario, id=admin_id, is_admin=True)
+    chat = get_object_or_404(Chat, id=chat_id, usuario=request.user)
+
+    mensajes = Mensaje.objects.filter(chat=chat, estado=Mensaje.EstadoChoices.BIEN)
     
+    # Aquí implementas la lógica para asociar estos mensajes al administrador.
+    for mensaje in mensajes:
+        Entrega.objects.create(administrador=administrador, mensaje=mensaje)
+
+    return JsonResponse({'status': 'success'})
+
 
 def logout_request(request):
     logout(request)

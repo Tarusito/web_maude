@@ -733,3 +733,87 @@ function actualizarEstadoMensaje(mensajeId, nuevoEstado) {
   })
   .catch(error => console.error('Error al actualizar el estado del mensaje:', error));
 }
+
+document.addEventListener('DOMContentLoaded', function () {
+  const entregarModal = document.getElementById('entregarModal');
+
+  entregarModal.addEventListener('show.bs.modal', function () {
+    const activeChatLink = document.querySelector('.chat-link.active');
+    const chatId = activeChatLink ? activeChatLink.getAttribute('data-chat-id') : '';
+
+    if (chatId) {
+      fetch(`/get_mensajes_bien/${chatId}/`)
+        .then(response => response.json())
+        .then(data => {
+          const mensajesContainer = document.getElementById('mensajesBienContainer');
+          let mensajesHtml = '';
+
+          if (data.mensajes.length > 0) {
+            data.mensajes.forEach(mensaje => {
+              mensajesHtml += `
+                <div class="alert alert-success">
+                  <strong>Comando:</strong> ${mensaje.comando}<br>
+                  <strong>Respuesta:</strong> ${mensaje.respuesta}
+                </div>`;
+            });
+          } else {
+            mensajesHtml = '<p>No hay mensajes con estado "bien".</p>';
+          }
+
+          mensajesContainer.innerHTML = mensajesHtml;
+
+          // Cargar la lista de administradores en el select
+          const administradorSelect = document.getElementById('administradorSelect');
+          administradorSelect.innerHTML = ''; // Limpiar el select
+          data.administradores.forEach(administrador => {
+            const option = document.createElement('option');
+            option.value = administrador.id;
+            option.textContent = administrador.nombre;
+            administradorSelect.appendChild(option);
+          });
+        })
+        .catch(error => console.error('Error:', error));
+    }
+  });
+});
+
+document.addEventListener('DOMContentLoaded', function () {
+  const entregarForm = document.getElementById('entregarForm');
+
+  entregarForm.addEventListener('submit', function (event) {
+    event.preventDefault();
+
+    const activeChatLink = document.querySelector('.chat-link.active');
+    const chatId = activeChatLink ? activeChatLink.getAttribute('data-chat-id') : '';
+    const administradorId = document.getElementById('administradorSelect').value;
+
+    if (!administradorId) {
+      alert('Por favor, selecciona un administrador.');
+      return;
+    }
+
+    if (chatId) {
+      const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+      fetch(`/enviar_mensajes_bien/${chatId}/`, {
+        method: 'POST',
+        body: JSON.stringify({ administrador_id: administradorId }),
+        headers: {
+          'X-CSRFToken': csrfToken,
+          'Content-Type': 'application/json',
+        },
+      })
+        .then(response => response.json())
+        .then(data => {
+          if (data.status === 'success') {
+            alert('Mensajes enviados correctamente.');
+            const modal = bootstrap.Modal.getInstance(entregarModal);
+            modal.hide();
+          } else {
+            alert('Error al enviar los mensajes.');
+          }
+        })
+        .catch(error => console.error('Error:', error));
+    }
+  });
+});

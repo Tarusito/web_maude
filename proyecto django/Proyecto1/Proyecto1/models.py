@@ -107,3 +107,7 @@ class ModuloVersion(models.Model):
     def __str__(self):
         return f"{self.titulo} - {self.fecha_creacion}"
 
+class Entrega(models.Model):
+    administrador = models.ForeignKey(Usuario, on_delete=models.CASCADE, limit_choices_to={'is_admin': True})
+    mensaje = models.ForeignKey(Mensaje, on_delete=models.CASCADE)
+    fecha_entrega = models.DateTimeField(auto_now_add=True)
