@@ -6,6 +6,14 @@ function showEntregaDetails(entregaId) {
             document.getElementById('modalTitulo').textContent = data.titulo;
             document.getElementById('modalAdministrador').textContent = data.administrador;
             document.getElementById('modalFecha').textContent = new Date(data.fecha).toLocaleDateString();
+            document.getElementById('modalEstado').textContent = data.corregido ? 'Corregida' : 'No corregida';
+
+            if (data.corregido) {
+                document.getElementById('notaSection').style.display = 'block';
+                document.getElementById('modalNota').textContent = data.nota;
+            } else {
+                document.getElementById('notaSection').style.display = 'none';
+            }
 
             const mensajesHtml = data.mensajes.map(mensaje => `
                 <div class="alert alert-secondary">
@@ -38,7 +46,7 @@ function fetchEntregas(page = 1) {
     }
     if (orderValue) {
         const [orderBy, direction] = orderValue.split('_');
-        params.append('order_by', orderBy === 'fecha' ? 'fecha' : orderBy);  // Usa 'fecha'
+        params.append('order_by', orderBy === 'fecha' ? 'fecha' : orderBy);
         params.append('direction', direction);
     }
     if (corregidoValue !== 'both') {
@@ -60,8 +68,8 @@ function fetchEntregas(page = 1) {
                                 <div class="card-body">
                                     <h5 class="card-title">${entrega.titulo}</h5>
                                     <p class="card-text"><strong>Fecha de Entrega:</strong> ${entrega.fecha}</p>
-                                    <p class="card-text"><strong>Estado:</strong> ${entrega.corregido ? 'Corregido' : 'Pendiente'}</p>
-                                    ${entrega.nota ? `<p class="card-text"><strong>Nota del Administrador:</strong> ${entrega.nota}</p>` : ''}
+                                    <p class="card-text"><strong>Estado:</strong> ${entrega.corregido ? 'Corregida' : 'No corregida'}</p>
+                                    ${entrega.nota ? `<p class="card-text rounded-pill"><strong>Nota del Administrador:</strong> ${entrega.nota}</p>` : ''}
                                     <button class="btn btn-primary" onclick="showEntregaDetails(${entrega.id})">Ver Detalles</button>
                                 </div>
                             </div>

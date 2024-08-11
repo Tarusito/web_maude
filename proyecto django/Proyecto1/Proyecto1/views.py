@@ -571,6 +571,8 @@ def entrega_detalles(request, entrega_id):
         'id': entrega.id,
         'titulo': entrega.titulo,
         'fecha': entrega.fecha.strftime('%d/%m/%Y %H:%M'),  # Formatear fecha y hora
+        'corregido': entrega.corregido,
+        'nota': entrega.nota if entrega.corregido else None,
         'administrador': entrega.administrador.nombre,
         'mensajes': [{
             'comando': mensaje.comando,
@@ -580,6 +582,7 @@ def entrega_detalles(request, entrega_id):
     }
 
     return JsonResponse(entrega_data)
+
 
 @login_required
 def tareas(request):
