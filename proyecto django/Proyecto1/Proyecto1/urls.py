@@ -52,5 +52,9 @@ urlpatterns = [
     path('get_module_info/<int:module_id>/', views.get_module_info, name='get_module_info'),
     path('update_message_status/', views.update_message_status, name='update_message_status'),
     path('get_mensajes_bien/<int:chat_id>/', views.get_mensajes_bien, name='get_mensajes_bien'),
+    path('enviar_mensajes_bien/<int:chat_id>/', views.enviar_mensajes_bien, name='enviar_mensajes_bien'),
+    path('tareas/', views.tareas, name='tareas'),
+    path('entregas_usuario/', views.entregas_usuario, name='entregas_usuario'),
+    path('entrega_detalles/<int:entrega_id>/', views.entrega_detalles, name='entrega_detalles'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 

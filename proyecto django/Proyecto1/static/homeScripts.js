@@ -100,13 +100,17 @@ document.addEventListener("DOMContentLoaded", function () {
           <div class="row">
             <p>${mensaje.respuesta}</p>
           </div>
-          <div class="row">
-            <button class="btn btn-outline-success ${botonBienActivo}" onclick="actualizarEstadoMensaje('${mensaje.mensaje_id}', 'bien')">
-              <i class="bi bi-check-circle"></i>
-            </button>
-            <button class="btn btn-outline-danger ${botonMalActivo}" onclick="actualizarEstadoMensaje('${mensaje.mensaje_id}', 'mal')">
-              <i class="bi bi-x-circle"></i>
-            </button>
+          <div class="row justify-content-start"">
+            <div class="col-2">
+              <button class="btn btn-outline-success btn-sm ${botonBienActivo}" onclick="actualizarEstadoMensaje('${mensaje.mensaje_id}', 'bien')">
+                <i class="bi bi-check-circle">✓</i>
+              </button>
+            </div>
+            <div class="col-2">
+              <button class="btn btn-outline-danger btn-sm ${botonMalActivo}" onclick="actualizarEstadoMensaje('${mensaje.mensaje_id}', 'mal')">
+                <i class="bi bi-x-circle">X</i>
+              </button>
+            </div>
           </div>
         </div>`;
     });
@@ -178,14 +182,18 @@ document.addEventListener("DOMContentLoaded", function () {
                     <div class="row">
                         <p>${data.respuesta}</p>
                     </div>
-                    <div class="row">
-                        <button class="btn btn-outline-success" onclick="actualizarEstadoMensaje('${data.mensaje_id}', 'bien')">
-                            <i class="bi bi-check-circle"></i>
-                        </button>
-                        <button class="btn btn-outline-danger" onclick="actualizarEstadoMensaje('${data.mensaje_id}', 'mal')">
-                            <i class="bi bi-x-circle"></i>
-                        </button>
-                    </div>
+                    <div class="row justify-content-start">
+                      <div class="col-2">
+                          <button class="btn btn-outline-success btn-sm" onclick="actualizarEstadoMensaje('${data.mensaje_id}', 'bien')">
+                              <i class="bi bi-check-circle">✓</i>
+                          </button>
+                      </div>
+                      <div class="col-2">
+                          <button class="btn btn-outline-danger btn-sm" onclick="actualizarEstadoMensaje('${data.mensaje_id}', 'mal')">
+                              <i class="bi bi-x-circle">X</i>
+                          </button>
+                      </div>
+                  </div>
                 </div>`;
             commandInput.value = '';
             historySection.scrollTop = historySection.scrollHeight; // Desplazar la vista al final
@@ -396,13 +404,17 @@ document.addEventListener('DOMContentLoaded', function () {
           <div class="row">
             <p>${mensaje.respuesta}</p>
           </div>
-          <div class="row">
-            <button class="btn btn-outline-success ${botonBienActivo} ${botonBienColor}" onclick="actualizarEstadoMensaje('${mensaje.mensaje_id}', 'bien')">
-              <i class="bi bi-check-circle"></i>
-            </button>
-            <button class="btn btn-outline-danger ${botonMalActivo} ${botonMalColor}" onclick="actualizarEstadoMensaje('${mensaje.mensaje_id}', 'mal')">
-              <i class="bi bi-x-circle"></i>
-            </button>
+          <div class="row justify-content-start">
+            <div class="col-2">
+              <button class="btn btn-outline-success btn-sm ${botonBienActivo} ${botonBienColor}" onclick="actualizarEstadoMensaje('${mensaje.mensaje_id}', 'bien')">
+                <i class="bi bi-check-circle">✓</i>
+              </button>
+            </div>
+            <div class="col-2">
+              <button class="btn btn-outline-danger btn-sm ${botonMalActivo} ${botonMalColor}" onclick="actualizarEstadoMensaje('${mensaje.mensaje_id}', 'mal')">
+                <i class="bi bi-x-circle">X</i>
+              </button>
+            </div>
           </div>
         </div>`;
     });
@@ -753,7 +765,8 @@ document.addEventListener('DOMContentLoaded', function () {
               mensajesHtml += `
                 <div class="alert alert-success">
                   <strong>Comando:</strong> ${mensaje.comando}<br>
-                  <strong>Respuesta:</strong> ${mensaje.respuesta}
+                  <strong>Respuesta:</strong> ${mensaje.respuesta}<br>
+                  <strong>Título módulo:</strong> ${mensaje.titulo_modulo}
                 </div>`;
             });
           } else {
@@ -779,6 +792,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
 document.addEventListener('DOMContentLoaded', function () {
   const entregarForm = document.getElementById('entregarForm');
+  const userId = document.getElementById('userInfo').getAttribute('data-user-id');
 
   entregarForm.addEventListener('submit', function (event) {
     event.preventDefault();
@@ -786,9 +800,15 @@ document.addEventListener('DOMContentLoaded', function () {
     const activeChatLink = document.querySelector('.chat-link.active');
     const chatId = activeChatLink ? activeChatLink.getAttribute('data-chat-id') : '';
     const administradorId = document.getElementById('administradorSelect').value;
+    const tituloEntrega = document.getElementById('tituloEntrega').value;
 
     if (!administradorId) {
       alert('Por favor, selecciona un administrador.');
+      return;
+    }
+
+    if (!tituloEntrega) {
+      alert('Por favor, introduce un título para la entrega.');
       return;
     }
 
@@ -797,7 +817,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
       fetch(`/enviar_mensajes_bien/${chatId}/`, {
         method: 'POST',
-        body: JSON.stringify({ administrador_id: administradorId }),
+        body: JSON.stringify({
+          administrador_id: administradorId,
+          titulo: tituloEntrega,
+          remitente_id: userId  // Utiliza la variable userId que leíste del atributo data-*
+        }),
         headers: {
           'X-CSRFToken': csrfToken,
           'Content-Type': 'application/json',

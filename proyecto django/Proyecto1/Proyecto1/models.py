@@ -109,5 +109,15 @@ class ModuloVersion(models.Model):
 
 class Entrega(models.Model):
     administrador = models.ForeignKey(Usuario, on_delete=models.CASCADE, limit_choices_to={'is_admin': True})
-    mensaje = models.ForeignKey(Mensaje, on_delete=models.CASCADE)
-    fecha_entrega = models.DateTimeField(auto_now_add=True)
+    mensajes = models.ManyToManyField(Mensaje)  # Cambiamos a ManyToManyField para relacionar varios mensajes
+    fecha = models.DateTimeField(auto_now_add=True)
+    titulo = models.CharField(max_length=255, verbose_name="Título de la Entrega", default="Nombre título default")
+    remitente = models.ForeignKey(Usuario, on_delete=models.CASCADE, related_name='entregas_enviadas', default=0)
+    corregido = models.BooleanField(default=False)
+    nota = models.TextField(null=True, blank=True)
+
+    def __str__(self):
+        return f"Entrega: {self.titulo} por {self.remitente.nombre} para {self.administrador.nombre} el {self.fecha}"
+
+
+

@@ -2,7 +2,7 @@ import json
 from pyexpat.errors import messages
 import re
 from django.core.mail import send_mail
-from django.core.paginator import Paginator
+from django.core.paginator import Paginator,EmptyPage, PageNotAnInteger
 from django.conf import settings
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
@@ -12,7 +12,7 @@ from django.contrib.auth import login as auth_login
 from .forms import RegistrationForm
 from django.contrib.auth import authenticate, logout
 from django.contrib.auth.decorators import login_required
-from .models import Chat, Mensaje, Modulo, Usuario
+from .models import Chat, Mensaje, Modulo, Usuario,Entrega
 import maude
 import itertools
 from django.urls import reverse_lazy
@@ -167,7 +167,7 @@ def saveModule(request, chat_id):
 def get_mensajes_bien(request, chat_id):
     chat = get_object_or_404(Chat, id=chat_id, usuario=request.user)
     mensajes = Mensaje.objects.filter(chat=chat, estado=Mensaje.EstadoChoices.BIEN)
-    mensajes_data = [{'comando': m.comando, 'respuesta': m.respuesta} for m in mensajes]
+    mensajes_data = [{'comando': m.comando, 'respuesta': m.respuesta, 'titulo_modulo': m.titulo_modulo} for m in mensajes]
     administradores = Usuario.objects.filter(is_admin=True).values('id', 'nombre')
     return JsonResponse({'mensajes': mensajes_data, 'administradores': list(administradores)})
 
@@ -182,11 +182,23 @@ def enviar_mensajes_bien(request, chat_id):
 
     mensajes = Mensaje.objects.filter(chat=chat, estado=Mensaje.EstadoChoices.BIEN)
     
-    # Aquí implementas la lógica para asociar estos mensajes al administrador.
-    for mensaje in mensajes:
-        Entrega.objects.create(administrador=administrador, mensaje=mensaje)
+    if mensajes.exists():
+        # Crear una única entrega
+        entrega = Entrega.objects.create(
+            administrador=administrador,
+            remitente=request.user,
+            titulo=data.get('titulo'),  # Puedes ajustar esto según sea necesario
+        )
+        # Asociar los mensajes a la entrega
+        entrega.mensajes.set(mensajes)
+        entrega.save()
 
-    return JsonResponse({'status': 'success'})
+        return JsonResponse({'status': 'success'})
+    else:
+        return JsonResponse({'status': 'error', 'message': 'No hay mensajes para entregar.'})
+
+
+
 
 
 def logout_request(request):
@@ -491,6 +503,87 @@ def create_modulo(request):
         return JsonResponse({'success': True})
 
     return JsonResponse({'success': False}, status=400)
+
+@login_required
+def entregas_usuario(request):
+    # Obtener el usuario logueado
+    usuario = request.user
+
+    # Obtener los filtros del request GET
+    search_query = request.GET.get('q', '')
+    order_by = request.GET.get('order_by', 'fecha')  # Usa 'fecha' aquí
+    direction = request.GET.get('direction', 'desc')
+    corregido = request.GET.get('corregido', 'both')
+    page = request.GET.get('page', 1)  # Obtener el número de página desde la URL
+
+    # Filtro base
+    entregas = Entrega.objects.filter(remitente=usuario)
+
+    # Aplicar filtro por nombre de la entrega
+    if search_query:
+        entregas = entregas.filter(titulo__icontains=search_query)
+
+    # Aplicar filtro por estado corregido/pendiente
+    if corregido == 'true':
+        entregas = entregas.filter(corregido=True)
+    elif corregido == 'false':
+        entregas = entregas.filter(corregido=False)
+
+    # Aplicar orden
+    if direction == 'asc':
+        entregas = entregas.order_by(order_by)
+    else:
+        entregas = entregas.order_by(f'-{order_by}')
+
+    # Paginación
+    paginator = Paginator(entregas, 5)  # 5 entregas por página (puedes ajustar el número)
+    try:
+        entregas_paginadas = paginator.page(page)
+    except PageNotAnInteger:
+        entregas_paginadas = paginator.page(1)
+    except EmptyPage:
+        entregas_paginadas = paginator.page(paginator.num_pages)
+
+    # Convertir las entregas a un diccionario para pasar a JSON
+    entregas_data = [{
+        'id': entrega.id,
+        'titulo': entrega.titulo,
+        'fecha': entrega.fecha.strftime('%d/%m/%Y %H:%M'),  # Formatear fecha y hora
+        'corregido': entrega.corregido,
+        'nota': entrega.nota
+    } for entrega in entregas_paginadas]
+
+    response_data = {
+        'entregas': entregas_data,
+        'has_next': entregas_paginadas.has_next(),
+        'has_previous': entregas_paginadas.has_previous(),
+        'page': entregas_paginadas.number,
+        'num_pages': paginator.num_pages
+    }
+
+    return JsonResponse(response_data)
+
+@login_required
+def entrega_detalles(request, entrega_id):
+    entrega = get_object_or_404(Entrega, id=entrega_id, remitente=request.user)
+
+    entrega_data = {
+        'id': entrega.id,
+        'titulo': entrega.titulo,
+        'fecha': entrega.fecha.strftime('%d/%m/%Y %H:%M'),  # Formatear fecha y hora
+        'administrador': entrega.administrador.nombre,
+        'mensajes': [{
+            'comando': mensaje.comando,
+            'respuesta': mensaje.respuesta,
+            'codigo_maude': mensaje.chat.modulo
+        } for mensaje in entrega.mensajes.all()]
+    }
+
+    return JsonResponse(entrega_data)
+
+@login_required
+def tareas(request):
+    return render(request, 'tareas.html')
 
 @require_http_methods(["POST"])
 def run_maude_command(request, chat_id):

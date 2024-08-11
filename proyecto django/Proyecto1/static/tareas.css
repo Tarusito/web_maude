@@ -1,0 +1,13 @@
+#modalMensajes {
+    border-top: 1px solid #dee2e6;
+    margin-top: 10px;
+    padding-top: 10px;
+}
+
+.modal-body {
+    padding-bottom: 0; /* Opcional, ajusta si deseas reducir el espacio */
+}
+
+.modal-dialog {
+    max-width: 800px; /* Ajusta el tamaño del modal si es necesario */
+}

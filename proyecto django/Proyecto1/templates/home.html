@@ -37,6 +37,16 @@
               <li><a class="dropdown-item" href="#">Menú Habilitación</a></li>
             </ul>
           </li>
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown"
+              aria-expanded="false">
+              Tareas
+            </a>
+            <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+              <li><a class="dropdown-item" href="/tareas">Entregadas</a></li>
+              <li><a class="dropdown-item" href="#">Corregidas</a></li>
+            </ul>
+          </li>
           <li class="nav-item">
             <a class="nav-link" href="{% url 'logout' %}">Cerrar sesión</a>
           </li>
@@ -382,11 +392,16 @@
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
-        <div id="mensajesBienContainer">
+        <div id="mensajesBienContainer" class="overflow-auto" style="max-height: 300px;">
           <!-- Aquí se mostrarán los mensajes con estado "bien" -->
         </div>
         <form id="entregarForm">
+          <div class="mb-3 mt-3">
+            <label for="tituloEntrega" class="form-label">Título de la Entrega</label>
+            <input type="text" class="form-control" id="tituloEntrega" placeholder="Introduce un título para la entrega" required>
+          </div>
           <div class="mb-3">
+            <div id="userInfo" data-user-id="{{ request.user.id }}"></div>
             <label for="administradorSelect" class="form-label">Selecciona el Administrador</label>
             <select class="form-select" id="administradorSelect" required>
               <option value="">Selecciona un administrador</option>
@@ -399,6 +414,7 @@
     </div>
   </div>
 </div>
+
 
 <div id="staticUrlsMaude" data-maude-logo-url="{% static 'maude_logo.jpg' %}" style="display:none;"></div>
 <div id="staticUrlsUser" data-user-logo-url="{% static 'user_default.jpg' %}" style="display:none;"></div>

@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
-from .models import Chat, Mensaje, Usuario, Modulo
+from .models import Chat, Mensaje, Usuario, Modulo, ModuloVersion, Entrega
 
 class UsuarioAdmin(BaseUserAdmin):
     model = Usuario
@@ -36,11 +36,27 @@ class MensajeAdmin(admin.ModelAdmin):
 
 admin.site.register(Mensaje, MensajeAdmin)
 
-admin.site.register(Usuario, UsuarioAdmin)
-
 class ModuloAdmin(admin.ModelAdmin):
     list_display = ('id', 'nombre', 'descripcion', 'codigo_maude', 'creador', 'activo')  # Agrega 'id' para mostrar el ID del módulo
     list_filter = ('activo',)
     search_fields = ('nombre', 'descripcion', 'codigo_maude')  # Habilita la búsqueda en estos campos
 
 admin.site.register(Modulo, ModuloAdmin)
+
+class ModuloVersionAdmin(admin.ModelAdmin):
+    list_display = ('id', 'chat', 'titulo', 'fecha_creacion')  # Agrega 'id' para mostrar el ID de la versión del módulo
+    search_fields = ('titulo', 'chat__nombre')
+    list_filter = ('fecha_creacion',)
+    date_hierarchy = 'fecha_creacion'
+
+admin.site.register(ModuloVersion, ModuloVersionAdmin)
+
+class EntregaAdmin(admin.ModelAdmin):
+    list_display = ('id', 'titulo', 'remitente', 'fecha', 'corregido', 'nota')  # Reemplazamos 'fecha_entrega' por 'fecha'
+    list_filter = ('corregido', 'fecha')  # Reemplazamos 'fecha_entrega' por 'fecha'
+    search_fields = ('titulo', 'remitente__nombre', 'nota')
+    readonly_fields = ('fecha',)  # Reemplazamos 'fecha_entrega' por 'fecha'
+
+admin.site.register(Entrega, EntregaAdmin)
+
+admin.site.register(Usuario, UsuarioAdmin)
