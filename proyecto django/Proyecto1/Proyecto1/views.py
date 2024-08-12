@@ -536,7 +536,7 @@ def entregas_usuario(request):
         entregas = entregas.order_by(f'-{order_by}')
 
     # Paginación
-    paginator = Paginator(entregas, 5)  # 5 entregas por página (puedes ajustar el número)
+    paginator = Paginator(entregas, 9)  # 5 entregas por página (puedes ajustar el número)
     try:
         entregas_paginadas = paginator.page(page)
     except PageNotAnInteger:
@@ -582,6 +582,20 @@ def entrega_detalles(request, entrega_id):
     }
 
     return JsonResponse(entrega_data)
+
+@login_required
+def eliminar_entregas(request):
+    if request.method == "POST":
+        data = json.loads(request.body)
+        ids = data.get('ids')
+        entregas = Entrega.objects.filter(id__in=ids, remitente=request.user)
+        entregas_deleted, _ = entregas.delete()
+        
+        if entregas_deleted > 0:
+            return JsonResponse({'status': 'success'})
+        return JsonResponse({'status': 'error', 'message': 'No se pudieron eliminar las entregas.'})
+        
+    return JsonResponse({'error': 'Método no permitido'}, status=405)
 
 
 @login_required

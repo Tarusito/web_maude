@@ -31,6 +31,44 @@ function showEntregaDetails(entregaId) {
         .catch(error => console.error('Error:', error));
 }
 
+function eliminarEntregasSeleccionadas() {
+    const selectedCheckboxes = document.querySelectorAll('.entrega-checkbox:checked');
+    const selectedIds = Array.from(selectedCheckboxes).map(checkbox => checkbox.value);
+    console.log(selectedIds)
+
+    if (selectedIds.length === 0) {
+        alert('No has seleccionado ninguna entrega.');
+        return;
+    }
+
+    if (!confirm(`¿Estás seguro de que deseas eliminar las ${selectedIds.length} entregas seleccionadas?`)) {
+        return;
+    }
+
+    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+    fetch(`/eliminar_entregas/`, {
+        method: 'POST',
+        body: JSON.stringify({ ids: selectedIds }),
+        headers: {
+            'X-CSRFToken': csrfToken,
+            'Content-Type': 'application/json',
+        },
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+            alert('Entregas eliminadas correctamente.');
+            fetchEntregas();  // Recargar la lista de entregas
+        } else {
+            alert('Error al eliminar las entregas.');
+        }
+    })
+    .catch(error => console.error('Error:', error));
+}
+
+
+
 function fetchEntregas(page = 1) {
     const searchInput = document.getElementById('searchInput');
     const orderSelect = document.getElementById('orderSelect');
@@ -66,11 +104,18 @@ function fetchEntregas(page = 1) {
                         <div class="col-md-4 mb-3">
                             <div class="card">
                                 <div class="card-body">
-                                    <h5 class="card-title">${entrega.titulo}</h5>
-                                    <p class="card-text"><strong>Fecha de Entrega:</strong> ${entrega.fecha}</p>
-                                    <p class="card-text"><strong>Estado:</strong> ${entrega.corregido ? 'Corregida' : 'No corregida'}</p>
-                                    ${entrega.nota ? `<p class="card-text rounded-pill"><strong>Nota del Administrador:</strong> ${entrega.nota}</p>` : ''}
-                                    <button class="btn btn-primary" onclick="showEntregaDetails(${entrega.id})">Ver Detalles</button>
+                                    <div class="row">
+                                        <div class="col">
+                                            <div class="row">
+                                                <input type="checkbox" class="form-check-input entrega-checkbox" value="${entrega.id}">
+                                                <h5 class="card-title d-inline">${entrega.titulo}</h5>
+                                                <p class="card-text"><strong>Fecha de Entrega:</strong> ${entrega.fecha}</p>
+                                                <p class="card-text"><strong>Estado:</strong> ${entrega.corregido ? 'Corregida' : 'No corregida'}</p>
+                                                ${entrega.nota ? `<p class="card-text rounded-pill"><strong>Nota del Administrador:</strong> ${entrega.nota}</p>` : ''}
+                                                <button class="btn btn-primary" onclick="showEntregaDetails(${entrega.id})">Ver Detalles</button>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>`;
