@@ -56,5 +56,8 @@ urlpatterns = [
     path('tareas/', views.tareas, name='tareas'),
     path('entregas_usuario/', views.entregas_usuario, name='entregas_usuario'),
     path('entrega_detalles/<int:entrega_id>/', views.entrega_detalles, name='entrega_detalles'),
+    path('entregas_pendientes/', views.vista_entregas_pendientes, name='entregas_pendientes'),
+    path('entregas_pendientes_data/', views.entregas_pendientes, name='entregas_pendientes_data'),
+    path('corregir_entrega/<int:entrega_id>/', views.corregir_entrega, name='corregir_entrega'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 

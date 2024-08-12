@@ -565,7 +565,7 @@ def entregas_usuario(request):
 
 @login_required
 def entrega_detalles(request, entrega_id):
-    entrega = get_object_or_404(Entrega, id=entrega_id, remitente=request.user)
+    entrega = get_object_or_404(Entrega, id=entrega_id)
 
     entrega_data = {
         'id': entrega.id,
@@ -587,6 +587,83 @@ def entrega_detalles(request, entrega_id):
 @login_required
 def tareas(request):
     return render(request, 'tareas.html')
+
+
+@login_required
+def entregas_pendientes(request):
+    # Asegurarse de que el usuario es un administrador
+    if not request.user.is_admin:
+        return JsonResponse({'error': 'No tienes permisos para ver esta página.'}, status=403)
+
+    # Obtener los filtros del request GET
+    search_query = request.GET.get('q', '')
+    order_by = request.GET.get('order_by', 'fecha')
+    direction = request.GET.get('direction', 'desc')
+    page = request.GET.get('page', 1)  # Obtener el número de página desde la URL
+
+    # Filtro base para las entregas pendientes del administrador logueado
+    entregas = Entrega.objects.filter(administrador=request.user, corregido=False)
+
+    # Aplicar filtro por nombre de la entrega
+    if search_query:
+        entregas = entregas.filter(titulo__icontains=search_query)
+
+    # Aplicar orden
+    if direction == 'asc':
+        entregas = entregas.order_by(order_by)
+    else:
+        entregas = entregas.order_by(f'-{order_by}')
+
+    # Paginación
+    paginator = Paginator(entregas, 5)  # 5 entregas por página (puedes ajustar el número)
+    try:
+        entregas_paginadas = paginator.page(page)
+    except PageNotAnInteger:
+        entregas_paginadas = paginator.page(1)
+    except EmptyPage:
+        entregas_paginadas = paginator.page(paginator.num_pages)
+
+    # Convertir las entregas a un diccionario para pasar a JSON
+    entregas_data = [{
+        'id': entrega.id,
+        'titulo': entrega.titulo,
+        'fecha': entrega.fecha.strftime('%d/%m/%Y %H:%M'),  # Formatear fecha y hora
+        'remitente': entrega.remitente.nombre,
+    } for entrega in entregas_paginadas]
+
+    response_data = {
+        'entregas': entregas_data,
+        'has_next': entregas_paginadas.has_next(),
+        'has_previous': entregas_paginadas.has_previous(),
+        'page': entregas_paginadas.number,
+        'num_pages': paginator.num_pages
+    }
+
+    return JsonResponse(response_data)
+
+@login_required
+def corregir_entrega(request, entrega_id):
+    if request.method == "POST":
+        entrega = get_object_or_404(Entrega, id=entrega_id, administrador=request.user)
+        
+        # Cargar datos JSON desde el cuerpo de la solicitud
+        try:
+            data = json.loads(request.body)
+            nota = data.get('nota', '')  # Obtener la nota desde los datos JSON
+        except json.JSONDecodeError:
+            return JsonResponse({'error': 'Datos JSON inválidos'}, status=400)
+
+        entrega.corregido = True
+        entrega.nota = nota
+        entrega.save()
+
+        return JsonResponse({'status': 'success'})
+
+    return JsonResponse({'error': 'Método no permitido'}, status=405)
+
+@login_required
+def vista_entregas_pendientes(request):
+    return render(request, 'entregas_pendientes.html')
 
 @require_http_methods(["POST"])
 def run_maude_command(request, chat_id):

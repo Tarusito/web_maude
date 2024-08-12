@@ -501,8 +501,8 @@ document.addEventListener('DOMContentLoaded', function () {
       method: "POST",
       body: JSON.stringify({
           chat_id: chatId,
-          titulo: nuevoTitulo,
-          codigo: nuevoCodigo
+          titulo: titulo,
+          codigo: codigo
       }),
       headers: {
           "X-CSRFToken": csrfToken,
@@ -512,9 +512,9 @@ document.addEventListener('DOMContentLoaded', function () {
   .then(response => response.json())
   .then(data => {
       if (data.status === 'success') {
-          // Actualizar el título en la interfaz
-          document.querySelector('.chat-title').innerText = nuevoTitulo;
-          // Actualizar el código mostrado en la interfaz si es necesario
+        const modalElement = document.getElementById('marketModal');
+        const modal = bootstrap.Modal.getInstance(modalElement);
+        modal.hide();
       } else {
           console.error('Error al crear la nueva versión');
       }
@@ -637,9 +637,9 @@ document.addEventListener('DOMContentLoaded', function () {
   .then(response => response.json())
   .then(data => {
       if (data.status === 'success') {
-          // Aquí también puedes actualizar el título del módulo en la UI
-          document.querySelector('.chat-title').innerText = selectedVersionTitle;
-          // Actualizar el código mostrado si es necesario
+        const modalElement = document.getElementById('seleccionarVersionModal');
+        const modal = bootstrap.Modal.getInstance(modalElement);
+        modal.hide();
       } else {
           console.error('Error al seleccionar la versión');
       }

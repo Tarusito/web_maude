@@ -1,0 +1,25 @@
+<div class="row justify-content-start">
+    <div class="col-2">
+        <button class="btn btn-outline-success" onclick="actualizarEstadoMensaje('${data.mensaje_id}', 'bien')">
+            <i class="bi bi-check-circle"></i>
+        </button>
+    </div>
+    <div class="col-2">
+        <button class="btn btn-outline-danger" onclick="actualizarEstadoMensaje('${data.mensaje_id}', 'mal')">
+            <i class="bi bi-x-circle"></i>
+        </button>
+    </div>
+</div>
+
+<div class="row justify-content-start">
+    <div class="col-2">
+      <button class="btn btn-outline-success btn-sm ${botonBienActivo} ${botonBienColor}" onclick="actualizarEstadoMensaje('${mensaje.mensaje_id}', 'bien')">
+        <i class="bi bi-check-circle">✓</i>
+      </button>
+    </div>
+    <div class="col-2">
+      <button class="btn btn-outline-danger btn-sm ${botonMalActivo} ${botonMalColor}" onclick="actualizarEstadoMensaje('${mensaje.mensaje_id}', 'mal')">
+        <i class="bi bi-x-circle">X</i>
+      </button>
+    </div>
+  </div>
