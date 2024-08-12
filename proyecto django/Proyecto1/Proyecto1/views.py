@@ -426,6 +426,9 @@ def register(request):
 
 @login_required
 def marketModulos(request):
+    if not request.user.is_admin:
+        return JsonResponse({'error': 'Acceso denegado'}, status=403)
+    
     query = request.GET.get('q', '')
     order_by = request.GET.get('order_by', 'nombre')  # Valor predeterminado 'nombre'
     direction = request.GET.get('direction', 'asc')
@@ -677,7 +680,64 @@ def corregir_entrega(request, entrega_id):
 
 @login_required
 def vista_entregas_pendientes(request):
+    if not request.user.is_admin:
+        return JsonResponse({'error': 'Acceso denegado'}, status=403)
+    
     return render(request, 'entregas_pendientes.html')
+
+@login_required
+def historial_entregas_corregidas(request):
+    if not request.user.is_admin:
+        return JsonResponse({'error': 'Acceso denegado'}, status=403)
+
+    return render(request, 'historial_entregas_corregidas.html')
+
+@login_required
+def entregas_corregidas_data(request):
+    if not request.user.is_admin:
+        return JsonResponse({'error': 'Acceso denegado'}, status=403)
+
+    search_query = request.GET.get('q', '')
+    order_by = request.GET.get('order_by', 'fecha')
+    direction = request.GET.get('direction', 'desc')
+    page = request.GET.get('page', 1)
+
+    entregas = Entrega.objects.filter(administrador=request.user, corregido=True)
+
+    if search_query:
+        entregas = entregas.filter(titulo__icontains=search_query)
+
+    if direction == 'asc':
+        entregas = entregas.order_by(order_by)
+    else:
+        entregas = entregas.order_by(f'-{order_by}')
+
+    paginator = Paginator(entregas, 5)
+    try:
+        entregas_paginadas = paginator.page(page)
+    except PageNotAnInteger:
+        entregas_paginadas = paginator.page(1)
+    except EmptyPage:
+        entregas_paginadas = paginator.page(paginator.num_pages)
+
+    entregas_data = [{
+        'id': entrega.id,
+        'titulo': entrega.titulo,
+        'fecha': entrega.fecha.strftime('%d/%m/%Y %H:%M'),
+        'remitente': entrega.remitente.nombre,
+        'nota': entrega.nota
+    } for entrega in entregas_paginadas]
+
+    response_data = {
+        'entregas': entregas_data,
+        'has_next': entregas_paginadas.has_next(),
+        'has_previous': entregas_paginadas.has_previous(),
+        'page': entregas_paginadas.number,
+        'num_pages': paginator.num_pages
+    }
+
+    return JsonResponse(response_data)
+
 
 @require_http_methods(["POST"])
 def run_maude_command(request, chat_id):

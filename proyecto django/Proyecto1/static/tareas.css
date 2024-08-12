@@ -11,3 +11,7 @@
 .modal-dialog {
     max-width: 800px; /* Ajusta el tamaño del modal si es necesario */
 }
+
+.mainContainer{
+    padding-top: 20px;
+}

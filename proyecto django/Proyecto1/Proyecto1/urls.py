@@ -60,5 +60,7 @@ urlpatterns = [
     path('entregas_pendientes_data/', views.entregas_pendientes, name='entregas_pendientes_data'),
     path('corregir_entrega/<int:entrega_id>/', views.corregir_entrega, name='corregir_entrega'),
     path('eliminar_entregas/', views.eliminar_entregas, name='eliminar_entregas'),
+    path('historial_entregas_corregidas/', views.historial_entregas_corregidas, name='historial_entregas_corregidas'),
+    path('entregas_corregidas_data/', views.entregas_corregidas_data, name='entregas_corregidas_data'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 

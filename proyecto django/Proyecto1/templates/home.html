@@ -27,25 +27,12 @@
           <li class="nav-item">
             <a class="nav-link" aria-current="page" href="/home">Home</a>
           </li>
-          <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown"
-              aria-expanded="false">
-              Market Modulos
-            </a>
-            <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
-              <li><a class="dropdown-item" href="/marketModulos">Modulos</a></li>
-              <li><a class="dropdown-item" href="#">Menú Habilitación</a></li>
-            </ul>
+          <li class="nav-item">
+            <a class="nav-link" aria-current="page" href="/tareas">Mis tareas</a>
           </li>
-          <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown"
-              aria-expanded="false">
-              Tareas
-            </a>
-            <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
-              <li><a class="dropdown-item" href="/tareas">Entregadas</a></li>
-              <li><a class="dropdown-item" href="#">Corregidas</a></li>
-            </ul>
+          {% if user.is_admin %}
+          <li class="nav-item">
+            <a class="nav-link" aria-current="page" href="/marketModulos">Market Modulos</a>
           </li>
           <li class="nav-item dropdown">
             <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown"
@@ -54,16 +41,18 @@
             </a>
             <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
               <li><a class="dropdown-item" href="/entregas_pendientes">Pendientes Corregir</a></li>
-              <li><a class="dropdown-item" href="#">Historial Corregidas</a></li>
+              <li><a class="dropdown-item" href="/historial_entregas_corregidas">Historial Corregidas</a></li>
             </ul>
           </li>
+          {% endif %}
           <li class="nav-item">
             <a class="nav-link" href="{% url 'logout' %}">Cerrar sesión</a>
           </li>
         </ul>
       </div>
     </div>
-  </nav>
+</nav>
+
   <div class="container mt-5">
     <div class="row">
       <!-- Columna para los chats -->
