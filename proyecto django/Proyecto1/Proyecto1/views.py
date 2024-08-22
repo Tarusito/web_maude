@@ -593,7 +593,8 @@ def entrega_detalles(request, entrega_id):
         'corregido': entrega.corregido,
         'nota': entrega.nota if entrega.corregido else None,
         'administrador': entrega.administrador.nombre,
-        'mensajes': mensajes_data
+        'mensajes': mensajes_data,
+        'remitente': entrega.remitente.nombre
     }
 
     return JsonResponse(entrega_data)
