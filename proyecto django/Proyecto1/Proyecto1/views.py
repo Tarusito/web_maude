@@ -570,6 +570,22 @@ def entregas_usuario(request):
 def entrega_detalles(request, entrega_id):
     entrega = get_object_or_404(Entrega, id=entrega_id)
 
+    mensajes_data = []
+    
+    for mensaje in entrega.mensajes.all():
+        # Busca la versión del módulo por el título en el mensaje
+        modulo_version = ModuloVersion.objects.filter(titulo=mensaje.titulo_modulo).first()
+        if modulo_version:
+            codigo_maude = modulo_version.codigo
+        else:
+            codigo_maude = "Código no encontrado"
+
+        mensajes_data.append({
+            'comando': mensaje.comando,
+            'respuesta': mensaje.respuesta,
+            'codigo_maude': codigo_maude  # Devolver el código del módulo
+        })
+
     entrega_data = {
         'id': entrega.id,
         'titulo': entrega.titulo,
@@ -577,14 +593,12 @@ def entrega_detalles(request, entrega_id):
         'corregido': entrega.corregido,
         'nota': entrega.nota if entrega.corregido else None,
         'administrador': entrega.administrador.nombre,
-        'mensajes': [{
-            'comando': mensaje.comando,
-            'respuesta': mensaje.respuesta,
-            'codigo_maude': mensaje.chat.modulo
-        } for mensaje in entrega.mensajes.all()]
+        'mensajes': mensajes_data
     }
 
     return JsonResponse(entrega_data)
+
+
 
 @login_required
 def eliminar_entregas(request):

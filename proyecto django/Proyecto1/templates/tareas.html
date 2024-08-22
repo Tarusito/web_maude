@@ -58,20 +58,20 @@
     <div class="row">
       <div class="col">
         <div class="row">
-          <div class="col">
+          <div class="col-8">
             <h4>Mis Entregas</h4>
           </div>
-          <div class="col">
+          <div class="col-4">
             <button class="btn btn-danger" onclick="eliminarEntregasSeleccionadas()">Eliminar Seleccionadas</button>
           </div>
         </div>
         <div class="row">
           <div class="row mb-4">
-            <div class="col-md-4">
+            <div class="col-md-6">
                 <label class="form-label">Buscador</label>
                 <input type="text" id="searchInput" class="form-control" placeholder="Buscar por título...">
             </div>
-            <div class="col">
+            <div class="col-md-6">
                 <div class="row mb-4">
                     <label for="order-by" class="form-label">Ordenar por</label>
                     <div class="col">
@@ -105,27 +105,29 @@
     </div>
 
     <!-- Modal para mostrar detalles de la entrega -->
-    <div class="modal fade" id="entregaModal" tabindex="-1" aria-labelledby="entregaModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="entregaModalLabel">Detalles de la Entrega</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="mb-3">
-                        <p><strong>Título:</strong> <span id="modalTitulo"></span></p>
-                        <p><strong>Administrador:</strong> <span id="modalAdministrador"></span></p>
-                        <p><strong>Fecha de Entrega:</strong> <span id="modalFecha"></span></p>
-                        <p><strong>Estado:</strong> <span id="modalEstado"></span></p>
-                        <p id="notaSection" style="display:none;"><strong>Nota:</strong> <span id="modalNota"></span></p>
-                    </div>
-                    <div id="modalMensajes" class="overflow-auto" style="max-height: 300px;">
-                        <!-- Aquí se cargarán los mensajes -->
-                    </div>
-                </div>
-            </div>
-        </div>
+<div class="modal fade" id="entregaModal" tabindex="-1" aria-labelledby="entregaModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-fullscreen">
+      <div class="modal-content">
+          <div class="modal-header">
+              <h5 class="modal-title" id="entregaModalLabel">Detalles de la Entrega</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+              <div class="mb-3">
+                  <p><strong>Título:</strong> <span id="modalTitulo"></span></p>
+                  <p><strong>Administrador:</strong> <span id="modalAdministrador"></span></p>
+                  <p><strong>Fecha de Entrega:</strong> <span id="modalFecha"></span></p>
+                  <p><strong>Estado:</strong> <span id="modalEstado"></span></p>
+                  <p id="notaSection" style="display:none;"><strong>Nota:</strong> <span id="modalNota"></span></p>
+              </div>
+              <div id="modalMensajes" class="overflow-auto" style="max-height: 500px;">
+                  <!-- Aquí se cargarán los mensajes -->
+              </div>
+          </div>
+      </div>
+  </div>
+</div>
+
   </div>
 
 

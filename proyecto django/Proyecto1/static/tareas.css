@@ -5,11 +5,7 @@
 }
 
 .modal-body {
-    padding-bottom: 0; /* Opcional, ajusta si deseas reducir el espacio */
-}
-
-.modal-dialog {
-    max-width: 800px; /* Ajusta el tamaño del modal si es necesario */
+    padding-bottom: 0; 
 }
 
 .mainContainer{

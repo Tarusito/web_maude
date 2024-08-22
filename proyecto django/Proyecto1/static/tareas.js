@@ -5,7 +5,7 @@ function showEntregaDetails(entregaId) {
             // Rellenar el modal con la información de la entrega
             document.getElementById('modalTitulo').textContent = data.titulo;
             document.getElementById('modalAdministrador').textContent = data.administrador;
-            document.getElementById('modalFecha').textContent = new Date(data.fecha).toLocaleDateString();
+            document.getElementById('modalFecha').textContent = data.fecha;
             document.getElementById('modalEstado').textContent = data.corregido ? 'Corregida' : 'No corregida';
 
             if (data.corregido) {
@@ -17,9 +17,24 @@ function showEntregaDetails(entregaId) {
 
             const mensajesHtml = data.mensajes.map(mensaje => `
                 <div class="alert alert-secondary">
-                    <strong>Comando:</strong> ${mensaje.comando}<br>
-                    <strong>Respuesta:</strong> ${mensaje.respuesta}<br>
-                    <strong>Código del Módulo:</strong> ${mensaje.codigo_maude}
+                    <div class="row">
+                        <div class="col">
+                            <div class="row">
+                                <div class="col">
+                                    <strong>Comando:</strong> ${mensaje.comando}<br>
+                                    <strong>Respuesta:</strong> ${mensaje.respuesta}<br>
+                                </div>
+                                <div class="col">
+                                    <div class="row">
+                                        <p><strong>Código del Módulo:</strong></p>
+                                    </div>
+                                    <div class="row">
+                                        <pre><code>${mensaje.codigo_maude}</code></pre>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>`).join('');
 
             document.getElementById('modalMensajes').innerHTML = mensajesHtml;

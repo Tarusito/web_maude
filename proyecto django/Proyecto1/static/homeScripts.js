@@ -90,7 +90,7 @@ document.addEventListener("DOMContentLoaded", function () {
             <p>${mensaje.comando}</p>
           </div>
         </div>
-        <div class="respuesta">
+        <div class="respuesta mb-3">
           <div class="row">
             <p class="maude">
               <img src="${maudeLogoUrl}" alt="logoMaude" width="20" height="20">Maude: 
@@ -173,7 +173,7 @@ document.addEventListener("DOMContentLoaded", function () {
                         <p>${data.comando}</p>
                     </div>
                 </div>
-                <div class="respuesta">
+                <div class="respuesta mb-3">
                     <div class="row">
                         <p class="maude">
                             <img src="${maudeLogoUrl}" alt="logoMaude" width="20" height="20">Maude(<span class="modulo-titulo">${data.titulo_modulo}</span>):
@@ -394,7 +394,7 @@ document.addEventListener('DOMContentLoaded', function () {
             <p>${mensaje.comando}</p>
           </div>
         </div>
-        <div class="respuesta">
+        <div class="respuesta mb-3">
           <div class="row">
             <p class="maude">
               <img src="${maudeLogoUrl}" alt="logoMaude" width="20" height="20">Maude: 
@@ -535,9 +535,11 @@ document.addEventListener('DOMContentLoaded', function () {
       .then(data => {
         const moduleInfoBody = document.getElementById('moduleInfoBody');
         moduleInfoBody.innerHTML = `
-          <h5>Nombre: ${data.info.nombre}</h5>
-          <p>Descripción: ${data.info.descripcion}</p>
-          <pre><code>${data.info.codigo_maude}</code></pre>
+          <h5>${data.info.nombre}</h5>
+          <p>${data.info.descripcion}</p>
+          <div class="border p-2">
+            <pre><code>${data.info.codigo_maude}</code></pre>
+          </div>
         `;
         // Mostrar el modal de información del módulo
         moduleInfoModal.show();

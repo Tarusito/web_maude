@@ -213,8 +213,16 @@
               <div class="card-body">
                 <h5 class="card-title">{{ modulo.nombre }}</h5>
                 <p class="card-text">{{ modulo.descripcion }}</p>
-                <button class="btn btn-info info-btn" data-module-id="{{ modulo.id }}">Más información</button>
-                <button class="btn btn-primary download-btn" data-codigo="{{ modulo.codigo_maude }}" data-titulo="{{ modulo.nombre }}">Guardar versión</button>
+                <div class="row">
+                  <div class="col">
+                    <div class="row">
+                      <button class="btn btn-primary download-btn" data-codigo="{{ modulo.codigo_maude }}" data-titulo="{{ modulo.nombre }}">Guardar versión</button>
+                    </div>
+                    <div class="row">
+                      <button class="btn btn-info info-btn" data-module-id="{{ modulo.id }}">Más información</button>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
             {% endfor %}
@@ -291,9 +299,11 @@
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
-        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modificarModuloModal">Modificar Módulo</button>
-        <button type="button" class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#seleccionarVersionModal">Seleccionar Versión</button>
-        <button type="button" class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#compararVersionesModal">Comparar Versiones</button>
+        <div class="d-flex justify-content-center">
+          <button type="button" class="btn btn-primary m-2" data-bs-toggle="modal" data-bs-target="#modificarModuloModal">Modificar Módulo</button>
+          <button type="button" class="btn btn-secondary m-2" data-bs-toggle="modal" data-bs-target="#seleccionarVersionModal">Seleccionar Versión</button>
+          <button type="button" class="btn btn-secondary m-2" data-bs-toggle="modal" data-bs-target="#compararVersionesModal">Comparar Versiones</button>
+        </div>
       </div>
     </div>
   </div>

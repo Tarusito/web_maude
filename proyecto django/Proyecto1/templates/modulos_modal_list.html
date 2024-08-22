@@ -10,8 +10,16 @@
             <div class="card-body">
                 <h5 class="card-title text-center">{{ modulo.nombre }}</h5>
                 <p class="card-text">{{ modulo.descripcion|slice:":200" }}{% if modulo.descripcion|length > 200 %}...{% endif %}</p>
-                <button class="btn btn-info info-btn" data-module-id="{{ modulo.id }}">Más información</button>
-                <button class="btn btn-primary download-btn" data-codigo="{{ modulo.codigo_maude }}" data-titulo="{{ modulo.nombre }}">Guardar</button>
+                <div class="row">
+                    <div class="col">
+                        <div class="row mb-2">
+                            <button class="btn btn-primary download-btn" data-codigo="{{ modulo.codigo_maude }}" data-titulo="{{ modulo.nombre }}">Guardar</button>
+                        </div>
+                        <div class="row">
+                            <button class="btn btn-info info-btn" data-module-id="{{ modulo.id }}">Más información</button>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
