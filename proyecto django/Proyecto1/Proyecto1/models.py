@@ -3,6 +3,9 @@ from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
 from django.contrib.auth import get_user_model
 from django.utils import timezone
+from django.db.models.signals import post_delete
+from django.dispatch import receiver
+import os
 
 # Crea un nuevo UserManager para tu modelo de usuario personalizado
 class UsuarioManager(BaseUserManager):
@@ -87,6 +90,7 @@ class Mensaje(models.Model):
     )
 
     
+
 class Modulo(models.Model):
     nombre = models.CharField(max_length=255, unique=True, verbose_name="Nombre del Módulo")
     descripcion = models.TextField(verbose_name="Descripción")
@@ -98,6 +102,27 @@ class Modulo(models.Model):
 
     def __str__(self):
         return f"{self.nombre} - Creado por {self.creador.email}"
+
+    def save(self, *args, **kwargs):
+        # Borrar la imagen anterior si se está actualizando con una nueva
+        try:
+            old_instance = Modulo.objects.get(pk=self.pk)
+            if old_instance.imagen and old_instance.imagen != self.imagen:
+                if os.path.isfile(old_instance.imagen.path):
+                    os.remove(old_instance.imagen.path)
+        except Modulo.DoesNotExist:
+            pass  # No hay imagen anterior que borrar
+
+        super().save(*args, **kwargs)
+
+# Señal para borrar la imagen del sistema de archivos cuando se elimina el objeto
+@receiver(post_delete, sender=Modulo)
+def auto_delete_file_on_delete(sender, instance, **kwargs):
+    """
+    Borra el archivo asociado cuando se elimina un objeto `Modulo`.
+    """
+    if instance.imagen and os.path.isfile(instance.imagen.path):
+        os.remove(instance.imagen.path)
     
 class ModuloVersion(models.Model):
     chat = models.ForeignKey(Chat, on_delete=models.CASCADE, related_name='versiones')

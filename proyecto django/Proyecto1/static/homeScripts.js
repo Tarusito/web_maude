@@ -586,25 +586,41 @@ document.addEventListener('DOMContentLoaded', function () {
     marketModal.hide();
 
     fetch(`/get_module_info/${moduleId}/`)
-      .then(response => response.json())
-      .then(data => {
-        const moduleInfoBody = document.getElementById('moduleInfoBody');
-        moduleInfoBody.innerHTML = `
-          <h5>${data.info.nombre}</h5>
-          <p>${data.info.descripcion}</p>
-          <div class="border p-2">
-            <pre><code>${data.info.codigo_maude}</code></pre>
-          </div>
-        `;
-        // Mostrar el modal de información del módulo
-        moduleInfoModal.show();
+        .then(response => response.json())
+        .then(data => {
+            const moduleInfoBody = document.getElementById('moduleInfoBody');
+            let imageHtml = '';
 
-        // Configurar el evento para volver a abrir el modal del Market al cerrar el modal de información del módulo
-        document.getElementById('moduleInfoModal').addEventListener('hidden.bs.modal', function () {
-          marketModal.show();
-        }, { once: true });
-      })
-      .catch(error => console.error('Error al obtener la información del módulo:', error));
+            // Verificar si existe la imagen
+            if (data.info.imagen) {
+                imageHtml = `<img src="${data.info.imagen}" class="img-thumbnail card-img-top rounded-circle" style="width: 100px; height: 100px; padding-left: 4px; padding-right: 4px;">`;
+            } else {
+                imageHtml = `<img src="https://via.placeholder.com/100" alt="Imagen del módulo" class="img-thumbnail card-img-top rounded-circle" style="width: 100px; height: 100px; padding-left: 4px; padding-right: 4px;">`;
+            }
+
+            // Inyectar el contenido dinámicamente
+            moduleInfoBody.innerHTML = `
+                
+                  <div class="row justify-content-center">
+                    ${imageHtml}
+                  </div>
+                  <h5>${data.info.nombre}</h5>
+                  <p>${data.info.descripcion}</p>
+                  <div class="border p-2">
+                      <pre><code>${data.info.codigo_maude}</code></pre>
+                  </div>
+                
+            `;
+
+            // Mostrar el modal de información del módulo
+            moduleInfoModal.show();
+
+            // Configurar el evento para volver a abrir el modal del Market al cerrar el modal de información del módulo
+            document.getElementById('moduleInfoModal').addEventListener('hidden.bs.modal', function () {
+                marketModal.show();
+            }, { once: true });
+        })
+        .catch(error => console.error('Error al obtener la información del módulo:', error));
 }
 
 });

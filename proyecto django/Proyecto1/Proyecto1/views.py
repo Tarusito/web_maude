@@ -1,6 +1,10 @@
 import json
 from pyexpat.errors import messages
 import re
+from PIL import Image
+from io import BytesIO
+from django.core.files.uploadedfile import InMemoryUploadedFile
+import sys
 from django.core.mail import send_mail
 from django.core.paginator import Paginator,EmptyPage, PageNotAnInteger
 from django.conf import settings
@@ -264,7 +268,7 @@ def get_module_info(request, module_id):
             'nombre': modulo.nombre,
             'descripcion': modulo.descripcion,
             'codigo_maude': modulo.codigo_maude,
-            # Agrega cualquier otra información relevante del módulo aquí
+            'imagen': modulo.imagen.url if modulo.imagen else None,
         }
     }
     return JsonResponse(data)
@@ -510,13 +514,38 @@ def update_modulo(request, modulo_nombre):
 
         # Manejo de la imagen
         if 'imagen' in request.FILES:
-            modulo.imagen = request.FILES['imagen']
+            imagen = request.FILES['imagen']
+            modulo.imagen = compress_image(imagen)
 
         modulo.save()
 
         return JsonResponse({'success': True})
 
     return JsonResponse({'success': False, 'error': 'Método no permitido'}, status=405)
+
+def compress_image(image, target_size_kb=1000, max_width=2000, max_height=2000, quality=100):
+    img = Image.open(image)
+    
+    # Redimensionar la imagen para que no exceda el max_width y max_height
+    img.thumbnail((max_width, max_height), Image.Resampling.LANCZOS)  # Usar LANCZOS para resampling de alta calidad
+    
+    img = img.convert('RGB')  # Asegurarse de que la imagen esté en modo RGB
+
+    output = BytesIO()
+    img.save(output, format='JPEG', quality=quality, optimize=True)
+    output_size_kb = output.tell() / 1024  # Convertir a KB
+
+    # Reducir calidad iterativamente si el tamaño es mayor que el objetivo
+    while output_size_kb > target_size_kb and quality > 10:
+        quality -= 3  # Disminuir la calidad en pasos más pequeños
+        output = BytesIO()
+        img.save(output, format='JPEG', quality=quality, optimize=True)
+        output_size_kb = output.tell() / 1024  # Recalcular el tamaño
+
+    output.seek(0)
+
+    # Convertir de nuevo a InMemoryUploadedFile para guardar en el modelo
+    return InMemoryUploadedFile(output, 'ImageField', image.name, 'image/jpeg', sys.getsizeof(output), None)
 
 @login_required
 def create_modulo(request):
@@ -528,6 +557,9 @@ def create_modulo(request):
 
         if not nombre or not descripcion or not codigo_maude:
             return JsonResponse({'success': False, 'error': 'Todos los campos son obligatorios.'})
+
+        if imagen:
+            imagen = compress_image(imagen)
 
         modulo = Modulo(
             nombre=nombre,
