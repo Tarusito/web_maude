@@ -5,6 +5,7 @@
     {% load static %}
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token }}">
     <title>Market Modulos</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
         integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
@@ -55,47 +56,44 @@
         </div>
     </nav>
 
-    <div class="container mt-5">
-        <div class="row mainContainer">
-            <div class="col">
-                <div class="row">
-                    <div class="col-9">
-                        <h3>Market Modulos</h3>
+    <div class="container mt-5 mainContainer">
+        <div class="row">
+            <div class="col-9">
+                <h3>Market Modulos</h3>
+            </div>
+            <div class="col-3 d-flex justify-content-end">
+                <button class="btn btn-primary me-2" data-bs-toggle="modal" data-bs-target="#crearModuloModal">Crear módulo</button>
+                <button class="btn btn-danger" id="deleteSelected" style="display:none;">Eliminar seleccionados</button>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-8">
+                <form class="order-by" id="search-form">
+                    <label class="form-label">Buscador</label>
+                    <input class="form-control me-2" type="search" placeholder="Buscar" aria-label="Buscar" name="q" id="search-input" value="{{ query }}">
+                </form>
+            </div>
+            <div class="col-4">
+                <div class="row mb-3">
+                    <label for="order-by" class="form-label">Ordenar por</label>
+                    <div class="col">
+                        <select id="order-by" class="form-select">
+                            <option value="nombre" {% if order_by == 'nombre' %}selected{% endif %}>Nombre</option>
+                            <option value="fecha_creacion" {% if order_by == 'fecha_creacion' %}selected{% endif %}>Fecha de creación</option>
+                        </select>
                     </div>
-                    <div class="col-3 pr-3">
-                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#crearModuloModal">Crear módulo</button>
+                    <div class="col">
+                        <select id="direction" class="form-select">
+                            <option value="asc" {% if direction == 'asc' %}selected{% endif %}>Ascendente</option>
+                            <option value="desc" {% if direction == 'desc' %}selected{% endif %}>Descendente</option>
+                        </select>
                     </div>
-                </div>
-                <div class="row">
-                    <div class="col-8">
-                        <form class="order-by" id="search-form">
-                            <label class="form-label">Buscador</label>
-                            <input class="form-control me-2" type="search" placeholder="Buscar" aria-label="Buscar" name="q" id="search-input" value="{{ query }}">
-                        </form>
-                    </div>
-                    <div class="col-4">
-                        <div class="row mb-3">
-                            <label for="order-by" class="form-label">Ordenar por</label>
-                            <div class="col">
-                                <select id="order-by" class="form-select">
-                                    <option value="nombre" {% if order_by == 'nombre' %}selected{% endif %}>Nombre</option>
-                                    <option value="fecha_creacion" {% if order_by == 'fecha_creacion' %}selected{% endif %}>Fecha de creación</option>
-                                </select>
-                            </div>
-                            <div class="col">
-                                <select id="direction" class="form-select">
-                                    <option value="asc" {% if direction == 'asc' %}selected{% endif %}>Ascendente</option>
-                                    <option value="desc" {% if direction == 'desc' %}selected{% endif %}>Descendente</option>
-                                </select>
-                            </div>
-                            <div class="col">
-                                <select id="status" class="form-select">
-                                    <option value="both" {% if status == 'both' %}selected{% endif %}>Ambos</option>
-                                    <option value="active" {% if status == 'active' %}selected{% endif %}>Activos</option>
-                                    <option value="inactive" {% if status == 'inactive' %}selected{% endif %}>Inactivos</option>
-                                </select>
-                            </div>
-                        </div>
+                    <div class="col">
+                        <select id="status" class="form-select">
+                            <option value="both" {% if status == 'both' %}selected{% endif %}>Ambos</option>
+                            <option value="active" {% if status == 'active' %}selected{% endif %}>Activos</option>
+                            <option value="inactive" {% if status == 'inactive' %}selected{% endif %}>Inactivos</option>
+                        </select>
                     </div>
                 </div>
             </div>
@@ -105,23 +103,25 @@
             {% include 'modulos_list.html' %}
         </div>
 
-        <!-- Modal de Detalle -->
-        <div class="modal fade" id="moduloModal" tabindex="-1" aria-labelledby="moduloModalLabel" aria-hidden="true">
-            <div class="modal-dialog modal-xl">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="moduloModalLabel">Detalle del Módulo</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
+      <!-- Modal de Detalle -->
+    <div class="modal fade" id="moduloModal" tabindex="-1" aria-labelledby="moduloModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="moduloModalLabel">Detalle del Módulo</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="updateModuloForm">
                         <div class="container">
                             <div class="row">
                                 <div class="col">
                                     <div class="row d-flex flex-column align-items-center">
-                                        <img id="modalImage" src="" alt="Imagen del Módulo" class="img-thumbnail card-img-top rounded-circle" style="width:100px; height: 100px;">
+                                        <img id="modalImage" src="" alt="Imagen del Módulo" class="img-thumbnail card-img-top rounded-circle" style="width: 100px; height: 100px; padding-left: 4px; padding-right: 4px;">
+                                        <input type="file" class="form-control mt-3" id="imagenModulo" name="imagen">
                                     </div>
-                                    <div class="row">
-                                        <p id="modalDescription"></p>
+                                    <div class="row mt-3">
+                                        <textarea class="form-control" id="modalDescription" name="descripcion" rows="5"></textarea>
                                     </div>
                                 </div>
                                 <div class="col">
@@ -131,19 +131,22 @@
                                     <div class="row">
                                         <textarea class="form-control" name="textoCodigo" id="modalCodigo" style="height: 500px"></textarea>                                       
                                     </div>
-                                    <div class="row mt-3">
-                                        <button type="button" class="btn btn-primary" id="guardarBtn">Guardar</button>
-                                    </div>
                                 </div>
                             </div>
                         </div>
-                        
-                        <h5 id="modalTitle"></h5>
-                        
-                    </div>
+                        <div class="row mt-3">
+                            <div class="col">
+                                <button type="submit" class="btn btn-primary" id="guardarBtn">Guardar Cambios</button>
+                            </div>
+                        </div>
+                    </form>
+                    <h5 id="modalTitle"></h5>
                 </div>
             </div>
         </div>
+    </div>
+
+
 
         <!-- Modal de Creación -->
         <div class="modal fade" id="crearModuloModal" tabindex="-1" aria-labelledby="crearModuloModalLabel" aria-hidden="true">
@@ -179,162 +182,10 @@
         </div>
     </div>
 
-    <script>
-document.addEventListener("DOMContentLoaded", function () {
-    function attachToggleHandlers() {
-        $('.toggle-btn').off('click').on('click', function() {
-            var button = $(this);
-            var moduloNombre = button.data('nombre');
-
-            $.ajax({
-                url: '/toggle_modulo/' + moduloNombre + '/',
-                type: 'POST',
-                data: {
-                    'csrfmiddlewaretoken': '{{ csrf_token }}'
-                },
-                success: function(response) {
-                    if (response.success) {
-                        if (response.activo) {
-                            button.removeClass('btn-success').addClass('btn-warning');
-                            button.text('Desactivar');
-                        } else {
-                            button.removeClass('btn-warning').addClass('btn-success');
-                            button.text('Activar');
-                        }
-                    } else {
-                        alert('Error al actualizar el estado del módulo.');
-                    }
-                },
-                error: function() {
-                    alert('Error al actualizar el estado del módulo.');
-                }
-            });
-        });
-    }
-
-    function fetchModulos() {
-        var query = $('#search-input').val();
-        var order_by = $('#order-by').val();
-        var direction = $('#direction').val();
-        var status = $('#status').val();
-
-        $.ajax({
-            url: "{% url 'market_modulos' %}",
-            type: 'GET',
-            data: {
-                'q': query,
-                'order_by': order_by,
-                'direction': direction,
-                'status': status
-            },
-            success: function(data) {
-                $('#modulos-list').html(data);
-                attachToggleHandlers();
-                $('#search-input').val(query); // Mantener el valor de búsqueda
-            },
-            error: function() {
-                alert('Error al realizar la búsqueda.');
-            }
-        });
-    }
-
-    $(document).ready(function() {
-        attachToggleHandlers();
-
-        $('#search-input').on('input', fetchModulos);
-        $('#order-by, #direction, #status').on('change', fetchModulos);
-
-        var exampleModal = document.getElementById('moduloModal');
-        var guardarBtn = exampleModal.querySelector('.modal-body #guardarBtn');
-        var modalCodigo = exampleModal.querySelector('.modal-body #modalCodigo');
-
-        exampleModal.addEventListener('show.bs.modal', function (event) {
-            var button = event.relatedTarget;
-            var nombre = button.getAttribute('data-nombre');
-            var descripcion = button.getAttribute('data-descripcion');
-            var imagen = button.getAttribute('data-imagen');
-            var codigo = button.getAttribute('data-codigo');
-
-            var modalTitle = exampleModal.querySelector('.modal-title');
-            var modalBodyDescription = exampleModal.querySelector('.modal-body #modalDescription');
-            var modalBodyImage = exampleModal.querySelector('.modal-body #modalImage');
-
-            modalTitle.textContent = nombre;
-            modalBodyDescription.textContent = descripcion;
-            modalBodyImage.src = imagen;
-            modalCodigo.value = codigo;
-
-            var initialCodigo = codigo;
-
-            modalCodigo.removeEventListener('input', handleInputChange);
-            modalCodigo.addEventListener('input', handleInputChange);
-
-            function handleInputChange() {
-                if (modalCodigo.value !== initialCodigo) {
-                    guardarBtn.style.display = 'block';
-                } else {
-                    guardarBtn.style.display = 'none';
-                }
-            }
-
-            guardarBtn.removeEventListener('click', handleSaveClick);
-            guardarBtn.addEventListener('click', handleSaveClick);
-
-            function handleSaveClick() {
-                $.ajax({
-                    url: '/update_modulo/' + nombre + '/',
-                    type: 'POST',
-                    data: {
-                        'csrfmiddlewaretoken': '{{ csrf_token }}',
-                        'codigo_maude': modalCodigo.value
-                    },
-                    success: function(response) {
-                        if (response.success) {
-                            alert('Código actualizado con éxito.');
-                            $('#moduloModal').modal('hide');
-                            fetchModulos(); // Recargar la lista de módulos
-                        } else {
-                            alert('Error al actualizar el código.');
-                        }
-                    },
-                    error: function() {
-                        alert('Error al actualizar el código.');
-                    }
-                });
-            }
-        });
-
-        // Manejar la creación del módulo
-        $('#crearModuloForm').on('submit', function(event) {
-            event.preventDefault();
-            var formData = new FormData(this);
-            formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
-
-            $.ajax({
-                url: '/create_modulo/',
-                type: 'POST',
-                data: formData,
-                processData: false,
-                contentType: false,
-                success: function(response) {
-                    if (response.success) {
-                        alert('Módulo creado con éxito.');
-                        $('#crearModuloModal').modal('hide');
-                        fetchModulos();
-                    } else {
-                        alert('Error al crear el módulo.');
-                    }
-                },
-                error: function() {
-                    alert('Error al crear el módulo.');
-                }
-            });
-        });
-    });
-});
-
-
-    </script>
 </body>
+
+<script>
+    var marketModulosUrl = "{% url 'market_modulos' %}";
+</script>
 
 </html>

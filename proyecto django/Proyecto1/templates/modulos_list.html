@@ -2,6 +2,7 @@
     {% for modulo in page_obj %}
     <div class="col-sm-6 col-md-4 col-lg-3 mb-3">
         <div class="card h-100 pt-3">
+            <input type="checkbox" class="form-check-input delete-checkbox" value="{{ modulo.id }}" style="position: absolute; top: 10px; left: 10px;">
             {% if modulo.imagen and modulo.imagen.url %}
             <img src="{{ modulo.imagen.url }}" alt="Imagen del modulo" class="img-thumbnail card-img-top rounded-circle" style="width: 100px; height: 100px; object-fit: cover; margin: auto;">
             {% else %}
@@ -10,16 +11,24 @@
             <div class="card-body">
                 <h5 class="card-title text-center">{{ modulo.nombre }}</h5>
                 <p class="card-text">{{ modulo.descripcion|slice:":200" }}{% if modulo.descripcion|length > 200 %}...{% endif %}</p>
-                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#moduloModal"
-                    data-nombre="{{ modulo.nombre }}"
-                    data-descripcion="{{ modulo.descripcion }}"
-                    data-imagen="{% if modulo.imagen and modulo.imagen.url %}{{ modulo.imagen.url }}{% else %}https://via.placeholder.com/100{% endif %}"
-                    data-codigo="{{ modulo.codigo_maude }}">
-                    Más información
-                </button>
-                <button type="button" class="btn {% if modulo.activo %}btn-warning{% else %}btn-success{% endif %} toggle-btn" data-nombre="{{ modulo.nombre }}">
-                    {% if modulo.activo %}Desactivar{% else %}Activar{% endif %}
-                </button>
+                <div class="row">
+                    <div class="col">
+                        <div class="row mb-2">
+                            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#moduloModal"
+                                data-nombre="{{ modulo.nombre }}"
+                                data-descripcion="{{ modulo.descripcion }}"
+                                data-imagen="{% if modulo.imagen and modulo.imagen.url %}{{ modulo.imagen.url }}{% else %}https://via.placeholder.com/100{% endif %}"
+                                data-codigo="{{ modulo.codigo_maude }}">
+                                Más información
+                            </button>
+                        </div>
+                        <div class="row">
+                            <button type="button" class="btn {% if modulo.activo %}btn-warning{% else %}btn-success{% endif %} toggle-btn" data-nombre="{{ modulo.nombre }}">
+                                {% if modulo.activo %}Desactivar{% else %}Activar{% endif %}
+                            </button>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

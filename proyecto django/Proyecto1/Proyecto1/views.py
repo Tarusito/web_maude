@@ -13,6 +13,7 @@ from .forms import RegistrationForm
 from django.contrib.auth import authenticate, logout
 from django.contrib.auth.decorators import login_required
 from .models import Chat, Mensaje, Modulo, Usuario,Entrega
+from django.template.loader import render_to_string
 import maude
 import itertools
 from django.urls import reverse_lazy
@@ -36,6 +37,7 @@ from django.contrib.auth.tokens import default_token_generator
 from django.contrib.auth import get_user_model
 from django.db.models import Q
 from django.http import JsonResponse
+from django.views.decorators.http import require_POST
 from django.shortcuts import render, get_object_or_404
 from .models import Modulo, ModuloVersion, Chat
 import difflib
@@ -118,6 +120,20 @@ def delete_chats(request):
         return JsonResponse({'message': 'Chats eliminados correctamente'}, status=200)
     else:
         return JsonResponse({'error': 'Método no permitido'}, status=405)
+
+
+@require_POST
+@login_required
+def delete_modulos(request):
+    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        try:
+            data = json.loads(request.body)
+            ids = data.get('ids', [])
+            Modulo.objects.filter(id__in=ids).delete()
+            return JsonResponse({'success': True})
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)})
+    return JsonResponse({'success': False, 'error': 'Invalid request'}, status=400)
 
 @login_required
 def get_chat_content(request, chat_id):
@@ -225,6 +241,12 @@ def get_available_modules(request):
     paginator = Paginator(modulos_list, 10)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
+    print("--------------------ANTES DE IFFFFF----------------------------")
+    print(request.META.get('HTTP_X_REQUESTED_WITH'))
+    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        print("--------------------Entrando a get_available_modules----------------------------")
+        html = render_to_string('modulos_modal_list.html', {'page_obj': page_obj})
+        return JsonResponse({'html': html})
 
     return render(request, 'modulos_modal_list.html', {
         'page_obj': page_obj,
@@ -478,11 +500,23 @@ def toggle_modulo(request, modulo_nombre):
 def update_modulo(request, modulo_nombre):
     if request.method == 'POST':
         modulo = get_object_or_404(Modulo, nombre=modulo_nombre)
-        nuevo_codigo = request.POST.get('codigo_maude', '')
-        modulo.codigo_maude = nuevo_codigo
+        codigo_maude = request.POST.get('codigo_maude')
+        descripcion = request.POST.get('descripcion')
+
+        if codigo_maude:
+            modulo.codigo_maude = codigo_maude
+        if descripcion:
+            modulo.descripcion = descripcion
+
+        # Manejo de la imagen
+        if 'imagen' in request.FILES:
+            modulo.imagen = request.FILES['imagen']
+
         modulo.save()
-        return JsonResponse({'success': True, 'codigo_maude': modulo.codigo_maude})
-    return JsonResponse({'success': False}, status=400)
+
+        return JsonResponse({'success': True})
+
+    return JsonResponse({'success': False, 'error': 'Método no permitido'}, status=405)
 
 @login_required
 def create_modulo(request):
@@ -761,6 +795,7 @@ def run_maude_command(request, chat_id):
     if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
         maude_execution = request.POST.get('maude_execution')
         user_code = request.POST.get('maude_code')
+        show_path = request.POST.get('show_path') == 'true'
 
         maude.init()
         maude.input(user_code)
@@ -861,9 +896,26 @@ def run_maude_command(request, chat_id):
                 flecha = search_arrow_map.get(search_arrow, maude.ANY_STEPS)
 
                 # Realizar la búsqueda
-                for sol, subs, path, nrew in itertools.islice(ini.search(flecha, fin, conditions, None, m or -1), n or 1):
+                for sol, subs, path_fn, nrew in itertools.islice(ini.search(flecha, fin, conditions, None, m or -1), n or 1):
                     solucion = str(subs)
-                    soluciones += f"{solucion}<br>"  
+                    if show_path:
+                        # Obtener el camino usando la función path_fn
+                        path = path_fn()  # Esto llama a la función lambda para obtener el camino
+
+                        # Procesar el camino como una secuencia de objetos Term y Rule
+                        path_str = ""
+                        for i in range(0, len(path), 2):
+                            term = path[i]
+                            rule = path[i + 1] if i + 1 < len(path) else "No rule"
+                            path_str += f"{term} --[{rule}]--> "
+
+                        # Eliminar la flecha final si está presente
+                        if path_str.endswith("--> "):
+                            path_str = path_str[:-4]
+
+                        solucion += f"<br><br>Path: {path_str}"
+
+                    soluciones += f"{solucion}<br>"
 
             return soluciones if soluciones else "No hay soluciones"        
             

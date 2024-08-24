@@ -98,12 +98,22 @@
             <!-- Formulario para enviar nuevos comandos -->
             <div class="chat-input">
               <form id="maudeForm">
-                <div class="input-group mb-3">
-                  <input type="text" id="maudeCommand" name="maude_execution" class="form-control" placeholder="Escribe tu comando Maude aquí...">
-                  <button class="btn btn-primary" type="button">Enviar</button>
-                </div>
+                  <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+                  <div class="input-group mb-3">
+                      <!-- Contenedor del checkbox y el texto -->
+                      <div class="input-group-text" id="checkbox-container" style="display: none;">
+                          <input class="form-check-input mt-0" type="checkbox" value="" aria-label="Checkbox for following text input" id="dynamic-checkbox">
+                          <span id="showPathText" style="margin-left: 8px;">Show path</span>
+                      </div>
+                      <input type="text" id="maudeCommand" name="maude_execution" class="form-control" placeholder="Escribe tu comando aquí...">
+                      <button class="btn btn-primary" type="button">Enviar</button>
+                      <div id="commandError" class="invalid-feedback" style="display: none;">
+                          El comando debe terminar con un punto (".").
+                      </div>
+                  </div>
               </form>
-            </div>
+          </div>
+            
           </div>
         </div>
         {% else %}
@@ -121,6 +131,7 @@
       </div>
     </div>
   </div>
+  
 </body>
 <!-- Modal -->
 <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
@@ -427,4 +438,23 @@
 
 <div id="staticUrlsMaude" data-maude-logo-url="{% static 'maude_logo.jpg' %}" style="display:none;"></div>
 <div id="staticUrlsUser" data-user-logo-url="{% static 'user_default.jpg' %}" style="display:none;"></div>
+<script>
+  document.body.addEventListener('input', function(event) {
+      // Verificamos si el input que disparó el evento tiene el ID específico
+      if (event.target && event.target.id === 'maudeCommand') {
+          const inputValue = event.target.value.trim().toLowerCase();
+          const firstWord = inputValue.split(' ')[0]; // Obtener la primera palabra
+          
+          const checkboxContainer = document.querySelector('#checkbox-container');
+          
+          if (firstWord === 'search') {
+              checkboxContainer.style.display = 'inline-block';
+          } else {
+              checkboxContainer.style.display = 'none';
+              document.querySelector('#dynamic-checkbox').checked = false;
+          }
+      }
+  });
+</script>
+
 </html>

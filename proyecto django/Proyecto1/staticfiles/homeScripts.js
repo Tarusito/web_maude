@@ -352,34 +352,36 @@ document.addEventListener('DOMContentLoaded', function () {
 
 document.addEventListener('DOMContentLoaded', function () {
   const marketModal = document.getElementById('marketModal');
+
   marketModal.addEventListener('show.bs.modal', function () {
     fetchModules();
   });
 
-  function fetchModules() {
+  function fetchModules(pageUrl = null) {
     const query = document.getElementById('market-search-input').value || '';
     const orderBy = document.getElementById('market-order-by').value;
     const direction = document.getElementById('market-direction').value;
     const status = document.getElementById('market-status').value;
 
-    fetch(`/get_available_modules/?q=${query}&order_by=${orderBy}&direction=${direction}&status=${status}`)
-      .then(response => response.text())
-      .then(data => {
-        const marketModalBody = document.getElementById('marketModalBody');
-        marketModalBody.querySelector('#market-modulos-list').innerHTML = data;
-        attachModuleEventHandlers();
-      })
-      .catch(error => console.error('Error al cargar los módulos:', error));
+    const url = pageUrl || `/get_available_modules/?q=${query}&order_by=${orderBy}&direction=${direction}&status=${status}`;
+
+    fetch(url, {
+      headers: {
+        'X-Requested-With': 'XMLHttpRequest' // Marca la solicitud como AJAX
+      }
+    })
+    .then(response => response.json())
+    .then(data => {
+      const marketModalBody = document.getElementById('marketModalBody');
+      marketModalBody.querySelector('#market-modulos-list').innerHTML = data.html;
+      attachModuleEventHandlers();  // Re-aplica los eventos después de actualizar la lista
+    })
+    .catch(error => console.error('Error al cargar los módulos:', error));
   }
 
-  document.getElementById('market-search-input').addEventListener('input', fetchModules);
-  document.getElementById('market-order-by').addEventListener('change', fetchModules);
-  document.getElementById('market-direction').addEventListener('change', fetchModules);
-  document.getElementById('market-status').addEventListener('change', fetchModules);
-
   function attachModuleEventHandlers() {
-    document.querySelectorAll('.download-btn').forEach(function(button) {
-      button.addEventListener('click', function() {
+    document.querySelectorAll('.download-btn').forEach(function (button) {
+      button.addEventListener('click', function () {
         const codigo = this.getAttribute('data-codigo');
         const titulo = this.getAttribute('data-titulo');
         const chatId = document.querySelector('.chat-link.active').getAttribute('data-chat-id');
@@ -387,14 +389,20 @@ document.addEventListener('DOMContentLoaded', function () {
       });
     });
 
-    document.querySelectorAll('.info-btn').forEach(function(button) {
-      button.addEventListener('click', function() {
+    document.querySelectorAll('.info-btn').forEach(function (button) {
+      button.addEventListener('click', function () {
         const moduleId = this.getAttribute('data-module-id');
         showModuleInfo(moduleId);
       });
     });
-}
 
+    document.querySelectorAll('.pagination a').forEach(function (link) {
+      link.addEventListener('click', function (event) {
+        event.preventDefault();
+        fetchModules(this.href);
+      });
+    });
+  }
 
   function saveModuleVersion(chatId, titulo, codigo) {
     const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
@@ -443,8 +451,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }, { once: true });
       })
       .catch(error => console.error('Error al obtener la información del módulo:', error));
-}
-
+  }
 });
 
 

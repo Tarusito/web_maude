@@ -118,14 +118,23 @@ document.addEventListener("DOMContentLoaded", function () {
     contentHtml += `
       </div>
       <div class="chat-input">
-        <form id="maudeForm">
-          <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
-          <div class="input-group mb-3">
-            <input type="text" id="maudeCommand" name="maude_execution" class="form-control" placeholder="Escribe tu comando aquí...">
-            <button class="btn btn-primary" type="button">Enviar</button>
-          </div>
-        </form>
-      </div>`;
+          <form id="maudeForm">
+              <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+              <div class="input-group mb-3">
+                  <!-- Contenedor del checkbox y el texto -->
+                  <div class="input-group-text" id="checkbox-container" style="display: none;">
+                      <input class="form-check-input mt-0" type="checkbox" value="" aria-label="Checkbox for following text input" id="dynamic-checkbox">
+                      <span id="showPathText" style="margin-left: 8px;">Show path</span>
+                  </div>
+                  <input type="text" id="maudeCommand" name="maude_execution" class="form-control" placeholder="Escribe tu comando aquí...">
+                  <button class="btn btn-primary" type="button">Enviar</button>
+                  <div id="commandError" class="invalid-feedback" style="display: none;">
+                      El comando debe terminar con un punto (".").
+                  </div>
+              </div>
+          </form>
+      </div>
+      `;
     
     chatContainer.innerHTML = contentHtml;
     moduloContainer.innerHTML = contentModal;
@@ -147,19 +156,49 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     const commandInput = document.getElementById('maudeCommand');
+    const commandValue = commandInput.value.trim();
+    const commandError = document.getElementById('commandError');
     const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
     const maudeCode = document.getElementById('codigoMaude').value;
+
+    // Verificar si el comando termina con un punto
+    if (!commandValue.endsWith('.')) {
+        commandError.style.display = 'block'; // Muestra la alerta de error
+        commandInput.classList.add('is-invalid'); // Marca el input como inválido
+        commandInput.focus();
+        return;
+    } else {
+        commandError.style.display = 'none'; // Oculta la alerta de error
+        commandInput.classList.remove('is-invalid'); // Remueve la clase inválida
+    }
+
+    // Verificar si el checkbox está marcado
+    const showPathChecked = document.getElementById('dynamic-checkbox').checked;
+
+    // Eliminar el punto y el espacio final antes de enviar
+    const sanitizedCommand = commandValue.slice(0, -1).trim();
 
     const formData = new FormData();
     formData.append('csrfmiddlewaretoken', csrfToken);
     formData.append('maude_code', maudeCode);
-    formData.append('maude_execution', commandInput.value);
+    formData.append('maude_execution', sanitizedCommand);
+    formData.append('show_path', showPathChecked); // Añadir el valor del checkbox
 
-    fetch(`/run_maude_command/${chatId}/`, {
+    // Función para manejar fetch con timeout
+    const fetchWithTimeout = (url, options, timeout = 5000) => {
+        return Promise.race([
+            fetch(url, options),
+            new Promise((_, reject) =>
+                setTimeout(() => reject(new Error('Timeout exceeded')), timeout)
+            )
+        ]);
+    };
+
+    fetchWithTimeout(`/run_maude_command/${chatId}/`, {
         method: "POST",
         body: formData,
         headers: { "X-Requested-With": "XMLHttpRequest" },
-    })
+    }, 10000)  // Timeout de 10 segundos
     .then(response => response.json())
     .then(data => {
         const historySection = document.querySelector('.chat-history');
@@ -195,24 +234,32 @@ document.addEventListener("DOMContentLoaded", function () {
                       </div>
                   </div>
                 </div>`;
+            
+            // Limpiar el input
             commandInput.value = '';
-            historySection.scrollTop = historySection.scrollHeight; // Desplazar la vista al final
+
+            // Ocultar el checkbox y el texto de "Show path"
+            const checkboxContainer = document.getElementById('checkbox-container');
+            checkboxContainer.style.display = 'none';
+            document.getElementById('dynamic-checkbox').checked = false; // Desmarcar el checkbox
+
+            // Desplazar la vista al final
+            historySection.scrollTop = historySection.scrollHeight;
         }
     })
-    .catch(error => console.error('Error:', error));
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Error: La ejecución del comando ha excedido el tiempo límite o ha fallado.');
+    });
 }
 
-
-
-
-
-  // Asigna el controlador sendMaudeCommand al botón de enviar en el formulario actualizado del chat
-  document.addEventListener('click', function (event) {
-    console.log("entro en el click");
+// Asigna el controlador sendMaudeCommand al botón de enviar en el formulario actualizado del chat
+document.addEventListener('click', function (event) {
     if (event.target && event.target.matches("#maudeForm .btn-primary")) {
-      sendMaudeCommand();
+        sendMaudeCommand();
     }
-  });
+});
+
 
   const chatHistory = document.querySelector('.chat-history');
   if (chatHistory) {
@@ -422,14 +469,22 @@ document.addEventListener('DOMContentLoaded', function () {
     contentHtml += `
       </div>
       <div class="chat-input">
-        <form id="maudeForm">
-          <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
-          <div class="input-group mb-3">
+    <form id="maudeForm">
+        <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+        <div class="input-group mb-3">
+            <!-- Contenedor del checkbox y el texto -->
+            <div class="input-group-text" id="checkbox-container" style="display: none;">
+                <input class="form-check-input mt-0" type="checkbox" value="" aria-label="Checkbox for following text input" id="dynamic-checkbox">
+                <span id="showPathText" style="margin-left: 8px;">Show path</span>
+            </div>
             <input type="text" id="maudeCommand" name="maude_execution" class="form-control" placeholder="Escribe tu comando aquí...">
             <button class="btn btn-primary" type="button">Enviar</button>
-          </div>
-        </form>
-      </div>`;
+            <div id="commandError" class="invalid-feedback" style="display: none;">
+                El comando debe terminar con un punto (".").
+            </div>
+        </div>
+    </form>
+</div>`;
     
     chatContainer.innerHTML = contentHtml;
     moduloContainer.innerHTML = contentModal;
