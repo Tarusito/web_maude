@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {% load static %}
+    <meta charset="UTF-8">
+    <meta name="csrf-token" content="{{ csrf_token }}">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mis tareas</title>
+    <script src="{% static 'tareas.js' %}"></script>
+    <link rel="stylesheet" href="{% static 'tareas.css' %}">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL"
+            crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="{% static 'tareas.css' %}">
+</head>
+<body>
+  <nav class="navbar navbar-expand-md navbar-dark fixed-top bg-dark" data-bs-theme="dark">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="/home">Maude Web</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
+        aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+          <li class="nav-item">
+            <a class="nav-link" aria-current="page" href="/home">Home</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" aria-current="page" href="/tareas">Mis tareas</a>
+          </li>
+          {% if user.is_admin %}
+          <li class="nav-item">
+            <a class="nav-link" aria-current="page" href="/marketModulos">Market Modulos</a>
+          </li>
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown"
+              aria-expanded="false">
+              Entregas
+            </a>
+            <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+              <li><a class="dropdown-item" href="/entregas_pendientes">Pendientes Corregir</a></li>
+              <li><a class="dropdown-item" href="/historial_entregas_corregidas">Historial Corregidas</a></li>
+            </ul>
+          </li>
+          {% endif %}
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'logout' %}">Cerrar sesión</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+</nav>
+
+  <div class="container mt-5 mainContainer" >
+    <div class="row">
+      <div class="col">
+        <div class="row">
+          <div class="col-8">
+            <h3>Mis Entregas</h3>
+          </div>
+          <div class="col-4">
+            <button class="btn btn-danger" onclick="eliminarEntregasSeleccionadas()">Eliminar Seleccionadas</button>
+          </div>
+        </div>
+        <div class="row">
+          <div class="row mb-4">
+            <div class="col-md-6">
+                <label class="form-label">Buscador</label>
+                <input type="text" id="searchInput" class="form-control" placeholder="Buscar por título...">
+            </div>
+            <div class="col-md-6">
+                <div class="row mb-4">
+                    <label for="order-by" class="form-label">Ordenar por</label>
+                    <div class="col">
+                        <select id="orderSelect" class="form-select">
+                            <option value="fecha_desc">Fecha de Entrega (descendente)</option>
+                            <option value="fecha_asc">Fecha de Entrega (ascendente)</option>
+                            <option value="titulo_asc">Título (ascendente)</option>
+                            <option value="titulo_desc">Título (descendente)</option>
+                        </select>
+                    </div>
+                    <div class="col">
+                        <select id="corregidoSelect" class="form-select">
+                            <option value="both">Todos</option>
+                            <option value="true">Corregido</option>
+                            <option value="false">Pendiente</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                
+            </div>
+        </div>
+        </div>
+      </div>
+    </div>
+
+        <div id="entregasContainer" class="row">
+            <!-- Aquí se cargarán las entregas -->
+        </div>
+    </div>
+
+    <!-- Modal para mostrar detalles de la entrega -->
+<div class="modal fade" id="entregaModal" tabindex="-1" aria-labelledby="entregaModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-fullscreen">
+      <div class="modal-content">
+          <div class="modal-header">
+              <h5 class="modal-title" id="entregaModalLabel">Detalles de la Entrega</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+              <div class="mb-3">
+                  <p><strong>Título:</strong> <span id="modalTitulo"></span></p>
+                  <p><strong>Administrador:</strong> <span id="modalAdministrador"></span></p>
+                  <p><strong>Fecha de Entrega:</strong> <span id="modalFecha"></span></p>
+                  <p><strong>Estado:</strong> <span id="modalEstado"></span></p>
+                  <p id="notaSection" style="display:none;"><strong>Nota:</strong> <span id="modalNota"></span></p>
+              </div>
+              <div id="modalMensajes" class="overflow-auto" style="max-height: 500px;">
+                  <!-- Aquí se cargarán los mensajes -->
+              </div>
+          </div>
+      </div>
+  </div>
+</div>
+
+  </div>
+
+
+</body>
+</html>

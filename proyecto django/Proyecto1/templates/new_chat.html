@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Crear nuevo chat</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container mt-5">
+        <h2>Crear nuevo chat</h2>
+        <form method="post">
+            {% csrf_token %}
+            <div class="mb-3">
+                <label for="nombre_chat" class="form-label">Nombre del Chat:</label>
+                <input type="text" class="form-control" id="nombre_chat" name="nombre_chat" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Crear Chat</button>
+        </form>
+    </div>
+</body>
+</html>

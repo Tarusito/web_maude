@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL"
+        crossorigin="anonymous"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+
+</head>
+<style>
+    body {
+        background-color: #FFDE9C;
+    }
+</style>
+
+<body>
+
+    {% block content %}
+    <div class="container mt-5">
+        <div class="row">
+            <div class="col-md-6 offset-md-3">
+                <h2 class="text-center">Registro</h2>
+                <form method="post" class="mt-4">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label for="id_nombre">Nombre</label>
+                        <input type="text" class="form-control" id="id_nombre" name="nombre" placeholder="Tu nombre">
+                    </div>
+                    <div class="form-group mt-2">
+                        <label for="id_correo_ucm">Correo UCM</label>
+                        <input type="email" class="form-control" id="id_correo_ucm" name="correo_ucm"
+                            placeholder="nombre@ucm.es">
+                    </div>
+                    <div class="form-group mt-2">
+                        <label for="id_contraseña">Contraseña</label>
+                        <input type="password" class="form-control" id="id_contraseña" name="contraseña"
+                            placeholder="Contraseña">
+                        <small id="passwordHelpBlock" class="form-text text-muted">
+                            La contraseña debe tener al menos 8 caracteres, incluir una letra mayúscula, una minúscula y
+                            un número.
+                        </small>
+                    </div>
+                    <div class="form-group mt-2">
+                        <label for="id_confirmar_contraseña">Confirmar contraseña</label>
+                        <input type="password" class="form-control" id="id_confirmar_contraseña"
+                            name="confirmar_contraseña" placeholder="Confirmar contraseña">
+                    </div>
+                    <button type="submit" class="btn btn-primary mt-3" id="registerButton" disabled>Registrar</button>
+                </form>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6 offset-md-3">
+                <p class="mt-4">¿Ya tienes una cuenta? <a href="{% url 'login' %}">Inicia sesión</a></p>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="verificationModal" tabindex="-1" aria-labelledby="verificationModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="verificationModalLabel">Verificación de Correo</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    Por favor, revisa tu correo electrónico y verifica tu cuenta accediendo al enlace que te hemos
+                    enviado.
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Entendido</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        $(document).ready(function () {
+            function validatePassword() {
+                var password = $("#id_contraseña").val();
+                var confirmPassword = $("#id_confirmar_contraseña").val();
+                var validLength = password.length >= 8;
+                var hasUpperCase = /[A-Z]/.test(password);
+                var hasLowerCase = /[a-z]/.test(password);
+                var hasNumber = /\d/.test(password);
+                var passwordsMatch = password === confirmPassword;
+
+                // Actualización de los mensajes de validación
+                $("#passwordHelpBlock").html(
+                    "La contraseña debe:<br>" +
+                    (validLength ? "<span class='text-success'>Tener al menos 8 caracteres.</span>" : "<span class='text-danger'>Tener al menos 8 caracteres.</span>") +
+                    (hasUpperCase ? "<span class='text-success'> Incluir una letra mayúscula.</span>" : "<span class='text-danger'> Incluir una letra mayúscula.</span>") +
+                    (hasLowerCase ? "<span class='text-success'> Incluir una letra minúscula.</span>" : "<span class='text-danger'> Incluir una letra minúscula.</span>") +
+                    (hasNumber ? "<span class='text-success'> Incluir un número.</span>" : "<span class='text-danger'> Incluir un número.</span>")
+                );
+
+                return validLength && hasUpperCase && hasLowerCase && hasNumber && passwordsMatch;
+            }
+
+            function updateButtonState() {
+                var emailValid = $("#id_correo_ucm").val().endsWith("@ucm.es");
+                var passwordValid = validatePassword();
+                $("#registerButton").prop('disabled', !(emailValid && passwordValid));
+            }
+
+            // Validación del correo UCM
+            $("#id_correo_ucm, #id_contraseña, #id_confirmar_contraseña").on("input", function () {
+                updateButtonState();
+            });
+
+            // Envío del formulario
+            $('form').submit(function (event) {
+                if ($("#registerButton").prop('disabled')) {
+                    event.preventDefault();
+                } else {
+                    event.preventDefault(); // Previene el envío inmediato del formulario
+                    $('#verificationModal').modal('show'); // Mostrar el modal
+
+                    // Enviar el formulario automáticamente después del modal
+                    setTimeout(function () {
+                        $('form').off('submit').submit();
+                    }, 5000);
+                }
+            });
+        });
+
+    </script>
+    {% endblock %}
+
+</body>
+
+</html>
